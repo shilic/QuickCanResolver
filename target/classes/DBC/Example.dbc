@@ -1,0 +1,421 @@
+VERSION ""
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: CCS AC
+
+BO_ 2560107544 CCSToAC1: 8 CCS
+ SG_ CCSToAC1_FactoryID : 0|8@1+ (1,0) [0|255] "" AC
+ SG_ CCSToAC1_AirSw : 8|2@1+ (1,0) [0|3] "" AC
+ SG_ CCSToCabin1_ColdGearReq : 10|4@1+ (1,0) [0|15] "" AC
+ SG_ CCSToAC1_FanGearReq : 14|4@1+ (1,0) [0|15] "" AC
+ SG_ heart : 56|8@1+ (1,0) [0|255] "" AC
+
+BO_ 2560104484 ACToCCS1: 8 AC
+ SG_ CabinToCCS1_FactoryID : 0|8@1+ (1,0) [0|255] "" CCS
+ SG_ CabinToCCS1_CabinTemp : 8|8@1+ (1,-50) [-50|205] "" CCS
+ SG_ CabinToCCS1_ColdGearSts : 16|4@1+ (1,0) [0|15] "" CCS
+ SG_ CabinToCCS1_FanGearSts : 20|4@1+ (1,0) [0|15] "℃" CCS
+ SG_ CabinToCCS1_FanMotFlt : 24|2@1+ (1,0) [0|3] "" CCS
+ SG_ CabinToCCS1_ColdMotFlt : 26|2@1+ (1,0) [0|3] "" CCS
+ SG_ CabinToCCS1_AirSts : 28|2@1+ (1,0) [0|3] "" CCS
+ SG_ CabinToCCS1_RollCnt : 56|8@1+ (1,0) [0|255] "" CCS
+
+BO_ 2560163839 motorMsg1: 8 Vector__XXX
+ SG_ motorSig0 : 7|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ intelSig0 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ motorsig1 : 20|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ motorsig2 : 27|4@0+ (1,0) [0|15] "" Vector__XXX
+ SG_ motorsig3 : 46|4@0+ (1,0) [0|15] "" Vector__XXX
+ SG_ motorsig4 : 41|16@0+ (1,0) [0|65535] "" Vector__XXX
+
+BO_ 2561387265 message1: 8 Vector__XXX
+ SG_ msg1_sig1 : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg1_sig2 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg1_sig3 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg1_sig4 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg1_sig5 : 32|8@1+ (0.2,-20) [-20|31] "" Vector__XXX
+ SG_ msg1_sig6 : 40|8@1+ (0.5,-50) [-50|77.5] "" Vector__XXX
+ SG_ msg1_sig7 : 48|8@1+ (0.1,-100.5) [-100.5|-75] "" Vector__XXX
+ SG_ msg1_sig8 : 56|8@1+ (0.1,100) [100|125.5] "" Vector__XXX
+
+BO_ 2561387266 message2: 8 Vector__XXX
+ SG_ msg2_sig1 : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg2_sig2 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg2_sig3 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg2_sig4 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg2_sig5 : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg2_sig6 : 40|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg2_sig7 : 48|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg2_sig8 : 56|8@1+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 2561387267 message3: 8 Vector__XXX
+ SG_ msg3_sig1 : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg3_sig2 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg3_sig3 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg3_sig4 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg3_sig5 : 32|8@1+ (0.2,-20) [-20|31] "" Vector__XXX
+ SG_ msg3_sig6 : 40|8@1+ (0.5,-50) [-50|77.5] "" Vector__XXX
+ SG_ msg3_sig7 : 48|8@1+ (0.1,-100.5) [-100.5|-75] "" Vector__XXX
+ SG_ msg3_sig8 : 56|8@1+ (0.1,100) [100|125.5] "" Vector__XXX
+
+BO_ 2561387268 message4: 8 Vector__XXX
+ SG_ msg4_sig1 : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg4_sig2 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg4_sig3 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg4_sig4 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg4_sig5 : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg4_sig6 : 40|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg4_sig7 : 48|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg4_sig8 : 56|8@1+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 2561387269 message5: 8 Vector__XXX
+ SG_ msg5_sig1 : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg5_sig2 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg5_sig3 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg5_sig4 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg5_sig5 : 32|8@1+ (0.1,-20) [-20|5.5] "" Vector__XXX
+ SG_ msg5_sig6 : 40|8@1+ (0.5,-50) [-50|77.5] "" Vector__XXX
+ SG_ msg5_sig7 : 48|8@1+ (0.1,-100.5) [-100.5|-75] "" Vector__XXX
+ SG_ msg5_sig8 : 56|8@1+ (0.1,100) [100|125.5] "" Vector__XXX
+
+BO_ 2561387270 message6: 8 Vector__XXX
+ SG_ msg6_sig1 : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg6_sig2 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg6_sig3 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg6_sig4 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg6_sig5 : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg6_sig6 : 40|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg6_sig7 : 48|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg6_sig8 : 56|8@1+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 2561387271 message7: 8 Vector__XXX
+ SG_ msg7_sig1 : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg7_sig2 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg7_sig3 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg7_sig4 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg7_sig5 : 32|8@1+ (0.2,-20) [-20|31] "" Vector__XXX
+ SG_ msg7_sig6 : 40|8@1+ (0.5,-50) [-50|77.5] "" Vector__XXX
+ SG_ msg7_sig7 : 48|8@1+ (0.1,-100.5) [-100.5|-75] "" Vector__XXX
+ SG_ msg7_sig8 : 56|8@1+ (0.1,100) [100|125.5] "" Vector__XXX
+
+BO_ 2561387272 message8: 8 Vector__XXX
+ SG_ msg8_sig1 : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg8_sig2 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg8_sig3 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg8_sig4 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg8_sig5 : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg8_sig6 : 40|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg8_sig7 : 48|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ msg8_sig8 : 56|8@1+ (1,0) [0|255] "" Vector__XXX
+
+
+CM_ BO_ 2560107544 "报文的注释可以写到这里。报文的注释也也也也可以写到这里。可以在这里填写报文的备注。";
+CM_ SG_ 2560107544 CCSToAC1_FactoryID "工厂代号。，可表示255个工厂，0表示不采用工厂代号。可以在这里填写信号的备注。";
+CM_ SG_ 2560107544 CCSToAC1_AirSw "空调开关。可以在这里填写信号的备注。";
+CM_ SG_ 2560107544 CCSToCabin1_ColdGearReq "制冷档位请求。可以在这里填写信号的备注。";
+CM_ SG_ 2560107544 CCSToAC1_FanGearReq "鼓风机档位大小请求。；；；；；；；；；；；。可以在这里填写信号的备注。";
+CM_ SG_ 2560107544 heart "心跳信号，默认分组会出现在所有分组数据中。";
+
+CM_ BO_ 2560104484 "报文的注释可以写到这里。上装发给中控屏1(发给网关，网关转给中控屏)。";
+CM_ SG_ 2560104484 CabinToCCS1_FactoryID "工厂代号。，可表示255个工厂，0表示不采用工厂代号。";
+CM_ SG_ 2560104484 CabinToCCS1_CabinTemp "货箱实际温度。";
+CM_ SG_ 2560104484 CabinToCCS1_ColdGearSts "制冷档位实际状态。";
+CM_ SG_ 2560104484 CabinToCCS1_FanGearSts "鼓风机档位执行状态。";
+CM_ SG_ 2560104484 CabinToCCS1_FanMotFlt "鼓风电机故障状态。一级没那么严重，二级稍微严重，三级非常严重。";
+CM_ SG_ 2560104484 CabinToCCS1_ColdMotFlt "冷热电机故障状态。可以用引号把注释内容引起来。";
+CM_ SG_ 2560104484 CabinToCCS1_AirSts "空调开关状态。";
+CM_ SG_ 2560104484 CabinToCCS1_RollCnt "空调面板计数器.。counter自动累加，从0加到255，然后循环，初始值为0，每次报文发送成功(收到ACK)以后，Counter加1；在Busoff出现恢复后，按照off前的值加1继续发送； ECU Reset 以后，Counter值清零。";
+
+CM_ BO_ 2560163839 "摩托罗拉格式请参照这一帧报文来编写。";
+CM_ SG_ 2560163839 motorSig0 "摩托罗拉和英特尔格式的区别。英特尔格式，在8*8矩阵中的最低位，是实际数据的低位；而摩托罗拉格式，在8*8矩阵中的最高位才是实际数据的最低位。例如他们同时占据 01234567这8位数据位时，通常来讲，表示2的多少次方，即[1，2，4，8，  16，32，64，128]。对英特尔而言矩阵中的0就是数据最低位，即2的0次方。而对摩托罗拉而言，在8*8矩阵中的7才是表示2的0次方，即数据最低位。所以motorSig0的起始位是7，长度8，表示76543210这8个数据。好了，理解这一点之后，我们再来理解摩托罗拉的跨字节表示，见motorsig4。";
+CM_ SG_ 2560163839 intelSig0 "";
+CM_ SG_ 2560163839 motorsig1 "";
+CM_ SG_ 2560163839 motorsig2 "";
+CM_ SG_ 2560163839 motorsig3 "";
+CM_ SG_ 2560163839 motorsig4 "摩托罗拉的跨字节表示，例如motorsig4的长度为16，起始位是41，跨了3个字节，分别跨了byt5，byte6，byte7共3个字节。其中，byte5有41 、40共2个；byte6有55、54、53、52、51、50、49、48共8个bit；然后byte7有 63、62、61、60、59、58共6个bit，加起来一共16位。表格中的起始位是41，表示从41开始，往下数了16个数据。但是实际上第41位表示的是2的16次方，是这个数据的最高位；而58才是2的0次方，表示数据的最低位。为什么63不是最低位呢，因为之前讲了，摩托罗拉格式，在单个byte(8bits)中数据是从低到高在排列。";
+
+CM_ BO_ 2561387265 "";
+CM_ SG_ 2561387265 msg1_sig1 "";
+CM_ SG_ 2561387265 msg1_sig2 "";
+CM_ SG_ 2561387265 msg1_sig3 "";
+CM_ SG_ 2561387265 msg1_sig4 "";
+CM_ SG_ 2561387265 msg1_sig5 "";
+CM_ SG_ 2561387265 msg1_sig6 "";
+CM_ SG_ 2561387265 msg1_sig7 "";
+CM_ SG_ 2561387265 msg1_sig8 "";
+
+CM_ BO_ 2561387266 "";
+CM_ SG_ 2561387266 msg2_sig1 "";
+CM_ SG_ 2561387266 msg2_sig2 "";
+CM_ SG_ 2561387266 msg2_sig3 "";
+CM_ SG_ 2561387266 msg2_sig4 "";
+CM_ SG_ 2561387266 msg2_sig5 "";
+CM_ SG_ 2561387266 msg2_sig6 "";
+CM_ SG_ 2561387266 msg2_sig7 "";
+CM_ SG_ 2561387266 msg2_sig8 "";
+
+CM_ BO_ 2561387267 "";
+CM_ SG_ 2561387267 msg3_sig1 "";
+CM_ SG_ 2561387267 msg3_sig2 "";
+CM_ SG_ 2561387267 msg3_sig3 "";
+CM_ SG_ 2561387267 msg3_sig4 "";
+CM_ SG_ 2561387267 msg3_sig5 "";
+CM_ SG_ 2561387267 msg3_sig6 "";
+CM_ SG_ 2561387267 msg3_sig7 "";
+CM_ SG_ 2561387267 msg3_sig8 "";
+
+CM_ BO_ 2561387268 "";
+CM_ SG_ 2561387268 msg4_sig1 "";
+CM_ SG_ 2561387268 msg4_sig2 "";
+CM_ SG_ 2561387268 msg4_sig3 "";
+CM_ SG_ 2561387268 msg4_sig4 "";
+CM_ SG_ 2561387268 msg4_sig5 "";
+CM_ SG_ 2561387268 msg4_sig6 "";
+CM_ SG_ 2561387268 msg4_sig7 "";
+CM_ SG_ 2561387268 msg4_sig8 "";
+
+CM_ BO_ 2561387269 "";
+CM_ SG_ 2561387269 msg5_sig1 "";
+CM_ SG_ 2561387269 msg5_sig2 "";
+CM_ SG_ 2561387269 msg5_sig3 "";
+CM_ SG_ 2561387269 msg5_sig4 "";
+CM_ SG_ 2561387269 msg5_sig5 "";
+CM_ SG_ 2561387269 msg5_sig6 "";
+CM_ SG_ 2561387269 msg5_sig7 "";
+CM_ SG_ 2561387269 msg5_sig8 "";
+
+CM_ BO_ 2561387270 "";
+CM_ SG_ 2561387270 msg6_sig1 "";
+CM_ SG_ 2561387270 msg6_sig2 "";
+CM_ SG_ 2561387270 msg6_sig3 "";
+CM_ SG_ 2561387270 msg6_sig4 "";
+CM_ SG_ 2561387270 msg6_sig5 "";
+CM_ SG_ 2561387270 msg6_sig6 "";
+CM_ SG_ 2561387270 msg6_sig7 "";
+CM_ SG_ 2561387270 msg6_sig8 "";
+
+CM_ BO_ 2561387271 "";
+CM_ SG_ 2561387271 msg7_sig1 "";
+CM_ SG_ 2561387271 msg7_sig2 "";
+CM_ SG_ 2561387271 msg7_sig3 "";
+CM_ SG_ 2561387271 msg7_sig4 "";
+CM_ SG_ 2561387271 msg7_sig5 "";
+CM_ SG_ 2561387271 msg7_sig6 "";
+CM_ SG_ 2561387271 msg7_sig7 "";
+CM_ SG_ 2561387271 msg7_sig8 "";
+
+CM_ BO_ 2561387272 "";
+CM_ SG_ 2561387272 msg8_sig1 "";
+CM_ SG_ 2561387272 msg8_sig2 "";
+CM_ SG_ 2561387272 msg8_sig3 "";
+CM_ SG_ 2561387272 msg8_sig4 "";
+CM_ SG_ 2561387272 msg8_sig5 "";
+CM_ SG_ 2561387272 msg8_sig6 "";
+CM_ SG_ 2561387272 msg8_sig7 "";
+CM_ SG_ 2561387272 msg8_sig8 "";
+
+
+BA_DEF_ SG_  "GenSigStartValue" INT 0 65535;
+BA_DEF_ SG_  "GenSigSendType" ENUM  "Cyclic","OnWrite","OnWriteWithRepetition","OnChange","OnChangeWithRepetition","IfActive","IfActiveWithRepetition","NoSigSendType";
+BA_DEF_ SG_  "GenSigInactiveValue" INT 0 65535;
+BA_DEF_ BO_  "GenMsgCycleTime" INT 0 65535;
+BA_DEF_ BO_  "GenMsgSendType" ENUM  "Cyclic","Event","IfActive","CE","CA";
+BA_DEF_ BO_  "GwUsedMsg" ENUM  "No","Yes";
+BA_DEF_ BO_  "DiagState" ENUM  "No","Yes";
+BA_DEF_ BO_  "NmMessage" ENUM  "No","Yes";
+BA_DEF_ BU_  "NmStationAddress" HEX 0 0;
+BA_DEF_  "DBName" STRING ;
+BA_DEF_  "BusType" STRING ;
+BA_DEF_DEF_  "GenSigStartValue" 0;
+BA_DEF_DEF_  "GenSigSendType" "Cyclic";
+BA_DEF_DEF_  "GenSigInactiveValue" 0;
+BA_DEF_DEF_  "GenMsgCycleTime" 200;
+BA_DEF_DEF_  "GenMsgSendType" "Cyclic";
+BA_DEF_DEF_  "GwUsedMsg" "No";
+BA_DEF_DEF_  "DiagState" "No";
+BA_DEF_DEF_  "NmMessage" "No";
+BA_DEF_DEF_  "NmStationAddress" 0;
+BA_DEF_DEF_  "DBName" "slc";
+BA_DEF_DEF_  "BusType" "CAN";
+BA_ "DBName" "Example";
+BA_ "GenMsgSendType" BO_ 2560107544 1;
+BA_ "GenMsgCycleTime" BO_ 2560107544 500;
+BA_ "GwUsedMsg" BO_ 2560107544 0;
+BA_ "DiagState" BO_ 2560107544 0;
+BA_ "NmMessage" BO_ 2560107544 0;
+BA_ "GenMsgSendType" BO_ 2560104484 0;
+BA_ "GenMsgCycleTime" BO_ 2560104484 100;
+BA_ "GwUsedMsg" BO_ 2560104484 0;
+BA_ "DiagState" BO_ 2560104484 0;
+BA_ "NmMessage" BO_ 2560104484 0;
+BA_ "GenMsgSendType" BO_ 2560163839 0;
+BA_ "GenMsgCycleTime" BO_ 2560163839 50;
+BA_ "GwUsedMsg" BO_ 2560163839 0;
+BA_ "DiagState" BO_ 2560163839 0;
+BA_ "NmMessage" BO_ 2560163839 0;
+BA_ "GenMsgSendType" BO_ 2561387265 0;
+BA_ "GenMsgCycleTime" BO_ 2561387265 200;
+BA_ "GwUsedMsg" BO_ 2561387265 0;
+BA_ "DiagState" BO_ 2561387265 0;
+BA_ "NmMessage" BO_ 2561387265 0;
+BA_ "GenMsgSendType" BO_ 2561387266 0;
+BA_ "GenMsgCycleTime" BO_ 2561387266 200;
+BA_ "GwUsedMsg" BO_ 2561387266 0;
+BA_ "DiagState" BO_ 2561387266 0;
+BA_ "NmMessage" BO_ 2561387266 0;
+BA_ "GenMsgSendType" BO_ 2561387267 0;
+BA_ "GenMsgCycleTime" BO_ 2561387267 200;
+BA_ "GwUsedMsg" BO_ 2561387267 0;
+BA_ "DiagState" BO_ 2561387267 0;
+BA_ "NmMessage" BO_ 2561387267 0;
+BA_ "GenMsgSendType" BO_ 2561387268 0;
+BA_ "GenMsgCycleTime" BO_ 2561387268 200;
+BA_ "GwUsedMsg" BO_ 2561387268 0;
+BA_ "DiagState" BO_ 2561387268 0;
+BA_ "NmMessage" BO_ 2561387268 0;
+BA_ "GenMsgSendType" BO_ 2561387269 0;
+BA_ "GenMsgCycleTime" BO_ 2561387269 200;
+BA_ "GwUsedMsg" BO_ 2561387269 0;
+BA_ "DiagState" BO_ 2561387269 0;
+BA_ "NmMessage" BO_ 2561387269 0;
+BA_ "GenMsgSendType" BO_ 2561387270 0;
+BA_ "GenMsgCycleTime" BO_ 2561387270 200;
+BA_ "GwUsedMsg" BO_ 2561387270 0;
+BA_ "DiagState" BO_ 2561387270 0;
+BA_ "NmMessage" BO_ 2561387270 0;
+BA_ "GenMsgSendType" BO_ 2561387271 0;
+BA_ "GenMsgCycleTime" BO_ 2561387271 200;
+BA_ "GwUsedMsg" BO_ 2561387271 0;
+BA_ "DiagState" BO_ 2561387271 0;
+BA_ "NmMessage" BO_ 2561387271 0;
+BA_ "GenMsgSendType" BO_ 2561387272 0;
+BA_ "GenMsgCycleTime" BO_ 2561387272 200;
+BA_ "GwUsedMsg" BO_ 2561387272 0;
+BA_ "DiagState" BO_ 2561387272 0;
+BA_ "NmMessage" BO_ 2561387272 0;
+BA_ "GenSigStartValue" SG_ 2560107544 CCSToAC1_FactoryID 0;
+BA_ "GenSigStartValue" SG_ 2560107544 CCSToAC1_AirSw 0;
+BA_ "GenSigStartValue" SG_ 2560107544 CCSToCabin1_ColdGearReq 0;
+BA_ "GenSigStartValue" SG_ 2560107544 CCSToAC1_FanGearReq 0;
+BA_ "GenSigStartValue" SG_ 2560107544 heart 0;
+BA_ "GenSigStartValue" SG_ 2560104484 CabinToCCS1_FactoryID 0;
+BA_ "GenSigStartValue" SG_ 2560104484 CabinToCCS1_CabinTemp 70;
+BA_ "GenSigStartValue" SG_ 2560104484 CabinToCCS1_ColdGearSts 0;
+BA_ "GenSigStartValue" SG_ 2560104484 CabinToCCS1_FanGearSts 0;
+BA_ "GenSigStartValue" SG_ 2560104484 CabinToCCS1_FanMotFlt 0;
+BA_ "GenSigStartValue" SG_ 2560104484 CabinToCCS1_ColdMotFlt 0;
+BA_ "GenSigStartValue" SG_ 2560104484 CabinToCCS1_AirSts 0;
+BA_ "GenSigStartValue" SG_ 2560104484 CabinToCCS1_RollCnt 0;
+BA_ "GenSigStartValue" SG_ 2560163839 motorSig0 0;
+BA_ "GenSigStartValue" SG_ 2560163839 intelSig0 0;
+BA_ "GenSigStartValue" SG_ 2560163839 motorsig1 0;
+BA_ "GenSigStartValue" SG_ 2560163839 motorsig2 0;
+BA_ "GenSigStartValue" SG_ 2560163839 motorsig3 0;
+BA_ "GenSigStartValue" SG_ 2560163839 motorsig4 0;
+BA_ "GenSigStartValue" SG_ 2561387265 msg1_sig1 0;
+BA_ "GenSigStartValue" SG_ 2561387265 msg1_sig2 0;
+BA_ "GenSigStartValue" SG_ 2561387265 msg1_sig3 0;
+BA_ "GenSigStartValue" SG_ 2561387265 msg1_sig4 0;
+BA_ "GenSigStartValue" SG_ 2561387265 msg1_sig5 0;
+BA_ "GenSigStartValue" SG_ 2561387265 msg1_sig6 0;
+BA_ "GenSigStartValue" SG_ 2561387265 msg1_sig7 0;
+BA_ "GenSigStartValue" SG_ 2561387265 msg1_sig8 0;
+BA_ "GenSigStartValue" SG_ 2561387266 msg2_sig1 0;
+BA_ "GenSigStartValue" SG_ 2561387266 msg2_sig2 0;
+BA_ "GenSigStartValue" SG_ 2561387266 msg2_sig3 0;
+BA_ "GenSigStartValue" SG_ 2561387266 msg2_sig4 0;
+BA_ "GenSigStartValue" SG_ 2561387266 msg2_sig5 0;
+BA_ "GenSigStartValue" SG_ 2561387266 msg2_sig6 0;
+BA_ "GenSigStartValue" SG_ 2561387266 msg2_sig7 0;
+BA_ "GenSigStartValue" SG_ 2561387266 msg2_sig8 0;
+BA_ "GenSigStartValue" SG_ 2561387267 msg3_sig1 0;
+BA_ "GenSigStartValue" SG_ 2561387267 msg3_sig2 0;
+BA_ "GenSigStartValue" SG_ 2561387267 msg3_sig3 0;
+BA_ "GenSigStartValue" SG_ 2561387267 msg3_sig4 0;
+BA_ "GenSigStartValue" SG_ 2561387267 msg3_sig5 0;
+BA_ "GenSigStartValue" SG_ 2561387267 msg3_sig6 0;
+BA_ "GenSigStartValue" SG_ 2561387267 msg3_sig7 0;
+BA_ "GenSigStartValue" SG_ 2561387267 msg3_sig8 0;
+BA_ "GenSigStartValue" SG_ 2561387268 msg4_sig1 0;
+BA_ "GenSigStartValue" SG_ 2561387268 msg4_sig2 0;
+BA_ "GenSigStartValue" SG_ 2561387268 msg4_sig3 0;
+BA_ "GenSigStartValue" SG_ 2561387268 msg4_sig4 0;
+BA_ "GenSigStartValue" SG_ 2561387268 msg4_sig5 0;
+BA_ "GenSigStartValue" SG_ 2561387268 msg4_sig6 0;
+BA_ "GenSigStartValue" SG_ 2561387268 msg4_sig7 0;
+BA_ "GenSigStartValue" SG_ 2561387268 msg4_sig8 0;
+BA_ "GenSigStartValue" SG_ 2561387269 msg5_sig1 0;
+BA_ "GenSigStartValue" SG_ 2561387269 msg5_sig2 0;
+BA_ "GenSigStartValue" SG_ 2561387269 msg5_sig3 0;
+BA_ "GenSigStartValue" SG_ 2561387269 msg5_sig4 0;
+BA_ "GenSigStartValue" SG_ 2561387269 msg5_sig5 0;
+BA_ "GenSigStartValue" SG_ 2561387269 msg5_sig6 0;
+BA_ "GenSigStartValue" SG_ 2561387269 msg5_sig7 0;
+BA_ "GenSigStartValue" SG_ 2561387269 msg5_sig8 0;
+BA_ "GenSigStartValue" SG_ 2561387270 msg6_sig1 0;
+BA_ "GenSigStartValue" SG_ 2561387270 msg6_sig2 0;
+BA_ "GenSigStartValue" SG_ 2561387270 msg6_sig3 0;
+BA_ "GenSigStartValue" SG_ 2561387270 msg6_sig4 0;
+BA_ "GenSigStartValue" SG_ 2561387270 msg6_sig5 0;
+BA_ "GenSigStartValue" SG_ 2561387270 msg6_sig6 0;
+BA_ "GenSigStartValue" SG_ 2561387270 msg6_sig7 0;
+BA_ "GenSigStartValue" SG_ 2561387270 msg6_sig8 0;
+BA_ "GenSigStartValue" SG_ 2561387271 msg7_sig1 0;
+BA_ "GenSigStartValue" SG_ 2561387271 msg7_sig2 0;
+BA_ "GenSigStartValue" SG_ 2561387271 msg7_sig3 0;
+BA_ "GenSigStartValue" SG_ 2561387271 msg7_sig4 0;
+BA_ "GenSigStartValue" SG_ 2561387271 msg7_sig5 0;
+BA_ "GenSigStartValue" SG_ 2561387271 msg7_sig6 0;
+BA_ "GenSigStartValue" SG_ 2561387271 msg7_sig7 0;
+BA_ "GenSigStartValue" SG_ 2561387271 msg7_sig8 0;
+BA_ "GenSigStartValue" SG_ 2561387272 msg8_sig1 0;
+BA_ "GenSigStartValue" SG_ 2561387272 msg8_sig2 0;
+BA_ "GenSigStartValue" SG_ 2561387272 msg8_sig3 0;
+BA_ "GenSigStartValue" SG_ 2561387272 msg8_sig4 0;
+BA_ "GenSigStartValue" SG_ 2561387272 msg8_sig5 0;
+BA_ "GenSigStartValue" SG_ 2561387272 msg8_sig6 0;
+BA_ "GenSigStartValue" SG_ 2561387272 msg8_sig7 0;
+BA_ "GenSigStartValue" SG_ 2561387272 msg8_sig8 0;
+
+VAL_ 2560107544 CCSToAC1_AirSw 0 "预留" 1 "关闭" 2 "开启" 3 "无效值未使用" ;
+VAL_ 2560107544 CCSToCabin1_ColdGearReq 0 "等级零" 1 "等级一" 2 "等级二" 3 "等级三" 4 "等级四" 5 "等级五" 6 "等级六" 7 "等级七" 8 "等级八" 9 "预留" 10 "预留" 11 "预留" 12 "预留" 13 "预留" 14 "预留" 15 "无效值未使用" ;
+VAL_ 2560107544 CCSToAC1_FanGearReq 0 "等级零" 1 "等级一" 2 "等级二" 3 "等级三" 4 "等级四" 5 "等级五" 6 "等级六" 7 "等级七" 8 "等级八" 9 "预留" 10 "预留" 11 "预留" 12 "预留" 13 "预留" 14 "预留" 15 "无效值未使用" ;
+VAL_ 2560104484 CabinToCCS1_ColdGearSts 0 "等级零" 1 "等级一" 2 "等级二" 3 "等级三" 4 "等级四" 5 "等级五" 6 "等级六" 7 "等级七" 8 "等级八" 9 "预留" 10 "预留" 11 "预留" 12 "预留" 13 "预留" 14 "预留" 15 "无效值未使用" ;
+VAL_ 2560104484 CabinToCCS1_FanGearSts 0 "等级零" 1 "等级一" 2 "等级二" 3 "等级三" 4 "等级四" 5 "等级五" 6 "等级六" 7 "等级七" 8 "等级八" 9 "预留" 10 "预留" 11 "预留" 12 "预留" 13 "预留" 14 "预留" 15 "无效值未使用" ;
+VAL_ 2560104484 CabinToCCS1_FanMotFlt 0 "无故障" 1 "一级故障" 2 "二级故障" 3 "三级故障" ;
+VAL_ 2560104484 CabinToCCS1_ColdMotFlt 0 "无 故障" 1 "短路" 2 "断路" 3 "堵转" ;
+VAL_ 2560104484 CabinToCCS1_AirSts 0 "预留" 1 "关闭" 2 "开启" 3 "无效值未使用  分号分割内容" ;
+
+

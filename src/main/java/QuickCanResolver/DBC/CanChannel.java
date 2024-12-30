@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 单个的表格对象 。 单个dbc对象
+ *  单个dbc对象
  */
 public class CanChannel {
     /** 节点列表 Set集合不重复*/

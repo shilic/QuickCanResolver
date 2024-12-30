@@ -211,7 +211,6 @@ public class DbcHandle {
             long longIdCode = Long.parseLong(strIdCode,10); // 10进制
             CANMsgIdType msgIdType = recognizeMsgID(longIdCode); //根据id识别扩展帧和标准帧
             int msgId;
-            //CANMsgIdType idType = CANMsgIdType.Extended;
             if (msgIdType == CANMsgIdType.Extended) { // id需要转换
                 msgId = CanMessage.transIdCodeToID(longIdCode);
             }

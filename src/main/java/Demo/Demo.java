@@ -15,8 +15,8 @@ public class Demo {
         Model2 model = new Model2();
 
         CanObjectMapManager manager = CanObjectMapManager.getInstance();
-        manager.registerDBC("testDbc",path1);
-        manager.registerData(model);
+        manager.registerDBC("testDbc",path1); // 绑定DBC文件
+        manager.registerData(model); // 绑定数据模型
 
         /* 2.获取CAN收发对象 */
         CanIO canIO = manager.getCanIo("testDbc");

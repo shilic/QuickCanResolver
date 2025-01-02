@@ -1,5 +1,6 @@
 package QuickCanResolver.CanHandle;
 
+import QuickCanResolver.CanTool.MyReflect;
 import QuickCanResolver.DBC.CanChannel;
 import QuickCanResolver.DBC.CanMessage;
 import QuickCanResolver.DBC.CanSignal;
@@ -28,13 +29,6 @@ public class CanObjectMapManager {
                 // 需要查找DBC中是否含有对应信号，有才加入 map 中。
                 final CanSignal[] signals = {null};
                 if (msgTag == SignalTag.Default){ // 用户没有标记报文ID，只能通过signal查询
-//                    for (Map.Entry<String,CanChannel> entry:dbcMap.entrySet()) {
-//                        CanChannel dbc = entry.getValue();
-//                        signal = dbc.getSignal(signalTag);
-//                        if (signal != null){
-//                            break;
-//                        }
-//                    }
                     dbcMap.values().parallelStream().forEach(dbc -> {
                         if (dbc.getSignal(signalTag) != null){
                             signals[0] = dbc.getSignal(signalTag);
@@ -42,13 +36,6 @@ public class CanObjectMapManager {
                     });
                 }
                 else { // 标记了id,可快速查询
-//                    for (Map.Entry<String,CanChannel> entry:dbcMap.entrySet()) {
-//                        CanChannel dbc = entry.getValue();
-//                        signal = dbc.getSignal(signalTag,msgTag);
-//                        if (signal != null){
-//                            break;
-//                        }
-//                    }
                     dbcMap.values().parallelStream().forEach(dbc -> {
                         if (dbc.getSignal(signalTag,msgTag) != null){
                             signals[0] = dbc.getSignal(signalTag,msgTag);
@@ -66,54 +53,27 @@ public class CanObjectMapManager {
             } // 查找字段注解
         }
         //查找所有字段
-    }
+    } // 从对象中获取字段
 
     /**
      * 更新数据模型中的数据至DBC中
      * @param canId CanId
      */
-
+    @Deprecated
     public void updateModelToDbc(int canId) {
         /* 1.  找到交换数据的双方 。字段和DBC*/
-//        final CanMessage[] msgs = new CanMessage[1];
-//        dbcMap.values().parallelStream().forEach(dbc -> {
-//            if (dbc.getMsg(canId) != null){
-//                msgs[0] = dbc.getMsg(canId);
-//            }
-//        });
         CanMessage msg = getMsgFromDbcMap(canId);
         if (msg == null){
             return;
         }
         Map<String, CanSignal> signalMap = msg.getSignalMap();
-        signalMap.values().parallelStream().filter(signal -> signal.getField() != null).forEach(signal -> {
+        signalMap.values().parallelStream().filter(CanSignal::isFieldBind).forEach(signal -> {
             Field field = signal.getField();/* 2. 拿到字段 */
             Object model = signal.getTarget(); // 原始对象
             //double sigValue = signal.currentValue ; /* 3. 拿到DBC的数据 */
             /* 4. 将 字段中的数据刷写到DBC中 */
             try {
-                //signal.currentValue = field.getInt(model); // 这行代码没有问题
-                Class<?> fieldType = field.getType();
-                /*有9个预先定义好的Class对象代表8个基本类型和void,它们被java虚拟机创建,和基本类型有相同的名字boolean, byte, char, short, int, long, float, and double.
-                这8个基本类型的Class对象可以通过java.lang.Boolean.TYPE,java.lang.Integer.TYPE等来访问,同样可以通过int.class,boolean.class等来访问.
-                int.class与Integer.TYPE是等价的,但是与Integer.class是不相等的,int.class指的是int的Class对象,Integer.class是Integer的Class的类对象 */
-                if (fieldType.equals(Integer.TYPE)){ // fieldValue instanceof Integer 和 fieldType == int.class 都可以判断。但不能用 Integer.class,注意。
-                    signal.currentValue = field.getInt(model);
-                }
-                else if (fieldType.equals(Double.TYPE)){
-                    signal.currentValue = field.getDouble(model);
-                }
-                else if (fieldType.equals(Byte.TYPE)){
-                    signal.currentValue = field.getByte(model);
-                }
-                else if (fieldType.equals(Short.TYPE)){
-                    signal.currentValue = field.getShort(model);
-                }
-                else if (fieldType.equals(Float.TYPE)){
-                    signal.currentValue = field.getFloat(model);
-                }else {
-                    throw new RuntimeException("注解的字段类型出错，数据类型必须是 int,byte,short,float,double 中的一个");
-                }
+                signal.currentValue = MyReflect.getFieldValue(field,model);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
@@ -124,50 +84,27 @@ public class CanObjectMapManager {
      * 更新DBC的数据至数据模型中
      * @param canId canId
      */
+    @Deprecated
     public void updateDbcToModel(int canId) {
         /* 1.  找到交换数据的双方 。字段和DBC*/
-//        final CanMessage[] msgs = new CanMessage[1];
-//        dbcMap.values().parallelStream().forEach(dbc -> {
-//            if (dbc.getMsg(canId) != null){
-//                msgs[0] = dbc.getMsg(canId);
-//            }
-//        });
         CanMessage msg = getMsgFromDbcMap(canId);
         if (msg == null){
             return;
         }
         Map<String, CanSignal> signalMap = msg.getSignalMap();
-        signalMap.values().parallelStream().filter(signal -> signal.getField() != null).forEach(signal -> {
+        signalMap.values().parallelStream().filter(CanSignal::isFieldBind).forEach(signal -> {
             Field field = signal.getField();/* 2. 拿到字段 */
             Object model = signal.getTarget(); // 原始对象
             double sigValue = signal.currentValue ; /* 3. 拿到DBC的数据 */
             /* 4. 将 DBC中数据 刷写道 字段中 */
             try {
-                field.setInt(model, (int) sigValue);
-                Class<?> fieldType = field.getType();
-                if (fieldType.equals(Integer.TYPE)){
-                    field.setInt(model, (int) sigValue);
-                }
-                else if (fieldType.equals(Double.TYPE)){
-                    field.setDouble(model,sigValue);
-                }
-                else if (fieldType.equals(Byte.TYPE)){
-                    field.setByte(model, (byte) sigValue);
-                }
-                else if (fieldType.equals(Short.TYPE)){
-                    field.setShort(model, (short) sigValue);
-                }
-                else if (fieldType.equals(Float.TYPE)){
-                    field.setFloat(model, (float) sigValue);
-                }
-                else {
-                    throw new RuntimeException("注解的字段类型出错，数据类型必须是 int,byte,short,float,double 中的一个");
-                }
+                MyReflect.setFieldValue(field, model, sigValue);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         });
-    }
+    } // 更新DBC的数据至数据模型中
+
     private CanMessage getMsgFromDbcMap(int canId){
         final CanMessage[] msgs = new CanMessage[1];
         msgs[0] = null ;

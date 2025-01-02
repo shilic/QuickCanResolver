@@ -1,6 +1,7 @@
 package QuickCanResolver.DBC;
 
 import QuickCanResolver.CanDataEnum.*;
+import QuickCanResolver.CanTool.MyReflect;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -44,7 +45,8 @@ public class CanSignal {
     /** 总线初始值 */
     protected double iniValueHex = 0;
     /** 当前信号的值 */
-    public volatile double currentValue = 0;
+    @Deprecated
+    public volatile double currentValue ;
     /** 值是否无效 ,true表示有效，*/
     protected volatile boolean valid = true;
     /** 单位*/
@@ -55,6 +57,39 @@ public class CanSignal {
     Object target;
     /** 用于标记属于哪个字段 */
     Field field;
+
+    /**
+     * 查询该信号是否绑定字段
+     * @return 绑定，返回真
+     */
+    public boolean isFieldBind(){
+        return field != null;
+    }
+
+    public boolean setFieldValue(double sigValue){
+        if (! isFieldBind()){
+            return false;
+        }
+        try {
+            MyReflect.setFieldValue(field, target, sigValue);
+            return true;
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public double getFieldValue(){
+        if (! isFieldBind()){
+            return 0;
+        }
+        try {
+            return MyReflect.getFieldValue(field,target);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
 
     @Override
     public String toString() {

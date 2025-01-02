@@ -305,14 +305,6 @@ public class MyByte {
      * @throws InputDataException 1.你传入的数组大小不是64。2.你传入的数组不是bit数组，请确保数组每一个值不是0就是1。
      */
     public static int[] from64bitsTo8BytesI(byte[] bits64, DataType type) throws InputDataException {
-//        if(bits64.length !=64){
-//            throw new InputDataException("你传入的数组大小不是64。");
-//        }
-//        for(byte bit:bits64){
-//            if( ! (bit==0||bit==1)){
-//                throw new InputDataException("你传入的数组不是bit数组，请确保数组每一个值不是0就是1。");
-//            }
-//        }
         int[] re = new int[8];
         // 1. Arrays.copyOfRange 方法，从 bits64数组中取8个数出来，
         // 2. 再用 from8bitsToByte 方法 把这个数组变成一个 byte ,
@@ -331,14 +323,6 @@ public class MyByte {
      * @throws InputDataException  1. 你传入的数组大小不是32。 2.你传入的数组不是bit数组，请确保数组每一个值不是0就是1。
      */
     public static long from32bitsToInt(byte[] bits, DataType type) throws InputDataException {
-//        if(bits.length !=32){
-//            throw new InputDataException("你传入的数组大小不是32");
-//        }
-//        for(byte bit:bits){
-//            if( ! (bit==0||bit==1)){
-//                throw new InputDataException("你传入的数组不是bit数组，请确保数组每一个值不是0就是1。");
-//            }
-//        }
         long re = 0x0000_0000L;
         switch (type){
             case Intel: default:

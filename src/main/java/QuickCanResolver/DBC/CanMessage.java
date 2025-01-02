@@ -70,7 +70,7 @@ public class CanMessage {  //编程第一步，定义数据结构
     public String getMsgValue(){
         StringBuilder builder = new StringBuilder();
         builder.append("报文名称：").append(msgName).append(";\n");
-        signalMap.values().forEach(sig -> builder.append("信号 : ").append(sig.getSignalName()).append(" = ").append(sig.currentValue).append(";\n"));
+        signalMap.values().forEach(sig -> builder.append("信号 : ").append(sig.getSignalName()).append(" = ").append(sig.getFieldValue()).append(";\n"));
         return builder.toString();
     }
     public CanMessage(String msgName, int msg_ID, long msgIDCode, CANMsgIdType msgIdType, int msgLength, String nodeName) {

@@ -27,7 +27,7 @@ public class DbcTest {
         CanIO canIO = new CanIO(dbc,null);
         id = 0x1898_2418;
         byte[] data8 = new byte[]{10, 3, (byte) 143, 0, 0, 0, 0, 0}; // {20,55, (byte) 0b1000_1111,55,55,55,55,55}
-        canIO.canDataToDbc(id,data8);
+        canIO.concurrentCanDataToDbc(id,data8);
         System.out.println("接收报文 Msg = "+dbc.getMsg(id).getMsgValue());
         /*  测试数据： byte[] data8 = new byte[]{10,3, (byte) 0b10001000,55,55,55,55,55};
         * 测试结果：
@@ -38,7 +38,7 @@ public class DbcTest {
         信号 : test_Signal_14 = -5.55;
         信号 : CCSToCabin1_FanGearReq = 15.0;
         *  */
-        int[] ints = canIO.dbcToCanData(id);
+        int[] ints = canIO.concurrentDbcToCanData(id);
         System.out.println("发送报文 = "+ Arrays.toString(ints));
         // 至此，报文的接收和发送均无问题。
     }
@@ -79,7 +79,7 @@ public class DbcTest {
         CanIO canIO = manager.getCanIo("testDbc");
 
         model.fanGearReq = 7 ;
-        int[] canData = canIO.modelToCanData(id);
+        int[] canData = canIO.concurrentModelToCan(id);
         System.out.println("canData = "+Arrays.toString(canData));
     }
 
@@ -100,7 +100,7 @@ public class DbcTest {
         CanIO canIO = manager.getCanIo("testDbc");
         byte[] data8 = new byte[]{0, 0, 3, 55, 0, 0, 0, 0};
 
-        canIO.canDataToModel(id,data8);
+        canIO.concurrentCanToModel(id,data8);
         System.out.println("canData = "+ model);
     }
     @Test

@@ -11,11 +11,13 @@ CAN总线是一种用于汽车网络的通信方式。这里附了一个连接�
 
 CAN总线的两根信号线通常采用的是双绞线，传输的是差分信号，通过两根信号线的电压差CANH-CANL来表示总线电平。这里只关心应用层的东西，不再细说。一帧CAN报文通常含有64it的数据，也就是8个Byte的数组，还有一个报文ID用于表示这帧报文。如下图所示。
 
-![image-20240112073255140](https://i-blog.csdnimg.cn/blog_migrate/aa48abfb39c952e5a31b3726c1990210.png)
+![image-20240112073255140](https://raw.githubusercontent.com/shilic/MarkDownImageRepository/main/img/aa48abfb39c952e5a31b3726c1990210.png)
 
 我们这里只关心仲裁段的ID和数据段的64bit数据即可，通常底层会将数据处理好，只把ID和数据发过来。ID用于标记这是哪一个信号。而64bit的数据中则包含了车身的各种数据，例如车速、电机转速、空调温度等，并且他们在这64bit中占据的长度不一致，并且位置也不一致，他们一起组合在一起，构成一帧报文。如下图所示。
 
-![image-20241230205702856](C:\Users\kfb\AppData\Roaming\Typora\typora-user-images\image-20241230205702856.png)
+![image-20241230205702856](https://raw.githubusercontent.com/shilic/MarkDownImageRepository/main/img/image-20241230205702856.png)
+
+
 
 ## 2.DBC是什么？
 

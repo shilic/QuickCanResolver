@@ -19,6 +19,10 @@ import java.util.regex.Pattern;
  * 用于处理将DBC文件解析为DBC对象，也就是反向操作。注意，暂时不支持报文分组，parseSG函数中，已经被我删去相关代码。
  */
 public class DbcHandle {
+    static String regex = "SG_\\s*(?<sigName>\\b[a-zA-Z_]\\w*)\\s*(?<group>[mM]\\d*)?\\s*:" +
+            "\\s*(?<startBit>\\d+)\\s*[|]\\s*(?<bitLength>\\d+)@(?<ByteOrder>[10])(?<DataType>[+-])"+
+            "\\s*\\((?<Factor>-?\\b\\d[\\d.]*),(?<Offset>-?\\b\\d[\\d.]*)\\)\\s*\\[(?<min>-?\\b\\d[\\d.]*)\\|(?<max>-?\\b\\d[\\d.]*)\\]\\s*" +
+            "\"(?<unit>[^\"]*)\"\\s*(?<nodeSet>[\\w,]+)";
     public static CanChannel getDbcFromFile(String filePath) {
         File file = new File(filePath);
         if(!file.exists()){ //如果文件不存在，退出
@@ -30,12 +34,9 @@ public class DbcHandle {
             return null;
         }
         String fileName = file.getName();   //获取文件完整名称,含后缀
-        //获取文件父级文件夹的连接
         //获取文件扩展名
         String fileExtension = fileName.substring(fileName.lastIndexOf("."));   //截取最后一个.之后的字符串 .xlsx  .dbc
         //获取文件名 ， 不包含扩展名
-        //获取下标0到最后一个点之前的文件名
-        //Matcher dbcMatcher = Pattern.compile("dbc").matcher(fileExtension);
         if (!fileExtension.equals(".dbc")){ //不是DBC文件，退出  !fileExtension.equals("dbc")    !dbcMatcher.find()
             System.out.println("不是DBC文件，退出");
             return null;
@@ -108,13 +109,9 @@ public class DbcHandle {
         if ( ! line.startsWith("SG_")){
             return null;
         }
-        String regex = "SG_\\s*(?<sigName>\\b[a-zA-Z_]\\w*)\\s*(?<group>[mM]\\d*)?\\s*:" +
-                "\\s*(?<startBit>\\d+)\\s*[|]\\s*(?<bitLength>\\d+)@(?<ByteOrder>[10])(?<DataType>[+-])"+
-                "\\s*\\((?<Factor>-?\\b\\d[\\d.]*),(?<Offset>-?\\b\\d[\\d.]*)\\)\\s*\\[(?<min>-?\\b\\d[\\d.]*)\\|(?<max>-?\\b\\d[\\d.]*)\\]\\s*" +
-                "\"(?<unit>[^\"]*)\"\\s*(?<nodeSet>[\\w,]+)";
-        Pattern sigPattern = Pattern.compile(regex);
-        Matcher sigMatch = sigPattern.matcher(line);
-        CanSignal signal;
+
+        Matcher sigMatch =  Pattern.compile(regex).matcher(line);
+
         if (sigMatch.find()){
             /* 原始数据（待解析） */
             String sigNameStr = sigMatch.group("sigName");
@@ -179,14 +176,13 @@ public class DbcHandle {
             else {
                 receiveNodeSet.add("Vector__XXX");
             }
-            signal = new CanSignal(sigNameStr,groupType,groupNum,byteOrder,startBit,bitLength,dataType,factor,offset,min,max,unitStr,receiveNodeSet);
+            return new CanSignal(sigNameStr,groupType,groupNum,byteOrder,startBit,bitLength,dataType,factor,offset,min,max,unitStr,receiveNodeSet);
+            //System.out.println(" sig = "+signal.getSignalInfo());
         }
         else {
             System.out.println("信号解析失败,原始数据line为:"+line);
             return null;
         }
-        //System.out.println(" sig = "+signal.getSignalInfo());
-        return signal;
     }
 
     /**
@@ -201,7 +197,7 @@ public class DbcHandle {
         }
         Pattern msgPattern = Pattern.compile("BO_\\s*(?<longIdCode>\\d+)\\s*(?<msgName>\\b[a-zA-Z_]\\w*)\\s*:\\s*(?<length>\\d)\\s*(?<node>\\b[a-zA-Z_]\\w*)");
         Matcher msgMatch = msgPattern.matcher(line);
-        CanMessage msg ;
+
         if (msgMatch.find()){
             String strIdCode = msgMatch.group("longIdCode");// 需要转换格式
             String msgName = msgMatch.group("msgName");
@@ -221,14 +217,13 @@ public class DbcHandle {
             if (strNode == null){
                 strNode = "Vector__XXX";
             }
-            msg = new CanMessage(msgName,msgId,longIdCode,msgIdType,msgLength,strNode);
+            return new CanMessage(msgName,msgId,longIdCode,msgIdType,msgLength,strNode);
+            //System.out.println(" msg = "+msg.getMsgBaseInfo());
         }
         else {
             System.out.println("消息解析失败");
             return null;
         }
-        //System.out.println(" msg = "+msg.getMsgBaseInfo());
-        return msg;
     } // parseBO
 
     /**
@@ -257,7 +252,7 @@ public class DbcHandle {
             return null;
         }
         /* 正则表达式，用于解析文件 */
-        Pattern nodePattern = Pattern.compile("(\\s+(?<node>[a-zA-Z]*))");
+        Pattern nodePattern = Pattern.compile("(\\s+(?<node>[a-zA-Z_]*))");
         Matcher nodeM = nodePattern.matcher(line);
         while (nodeM.find()) {
             String nodeTempValue = nodeM.group("node");

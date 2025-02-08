@@ -47,8 +47,15 @@ public class CanSignal {
     /** 当前信号的值 */
     @Deprecated
     public volatile double currentValue ;
-    /** 值是否无效 ,true表示有效，*/
+    /** 值是否无效 ,true表示有效，如 接受到信号值全为1，例如0XFF，则表示无效。是否使用这个变量，取决于用户。<br>
+     * TODO 后续会在DBC协议的解析中增加无效值的判断规则，然后再这里直接集成。
+     * */
     protected volatile boolean valid = true;
+    /**
+     * @deprecated TODO 后续增加无效值的解析，假如信号值等于该值的时候，直接让上边的 valid = false。
+     * */
+    @Deprecated
+    protected int validValue = 0;
     /** 单位*/
     protected final String unit ;
     /** 接收节点列表 默认值 Vector__XXX*/
@@ -67,7 +74,7 @@ public class CanSignal {
     }
 
     public boolean setFieldValue(double sigValue){
-        if (! isFieldBind()){
+        if (! isFieldBind()){ // 如果这个信号没有绑定字段，则不写入值
             return false;
         }
         try {

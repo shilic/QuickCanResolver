@@ -1,7 +1,7 @@
 import QuickCanResolver.CanHandle.CanIO;
 import QuickCanResolver.CanHandle.CanObjectMapManager;
 import QuickCanResolver.CanHandle.DbcHandle;
-import QuickCanResolver.DBC.CanChannel;
+import QuickCanResolver.DBC.CanDbc;
 import QuickCanResolver.DBC.CanSignal;
 import Demo.CanDataModel;
 import org.junit.Test;
@@ -17,14 +17,14 @@ public class DbcTest {
     @Test
     public void test1(){
         String path1 = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\大屏协议（测试版2）GBK编码.dbc";
-        CanChannel dbc = null;
+        CanDbc dbc = null;
         try {
             dbc = DbcHandle.getDbcFromFile(path1);
         } catch (Exception exception) {
             exception.printStackTrace();
         }
         assert dbc != null;
-        CanIO canIO = new CanIO(dbc,null);
+        CanIO canIO = new CanIO(dbc);
         id = 0x1898_2418;
         byte[] data8 = new byte[]{10, 3, (byte) 143, 0, 0, 0, 0, 0}; // {20,55, (byte) 0b1000_1111,55,55,55,55,55}
         canIO.concurrentCanDataToDbc(id,data8);
@@ -49,7 +49,7 @@ public class DbcTest {
     public void mappingTest1(){
         //CanObjectMapManager.getAnnotatedFields(CanDataModel.class);
         String path1 = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\大屏协议（测试版2）GBK编码.dbc";
-        CanChannel dbc = null;
+        CanDbc dbc = null;
         try {
             dbc = DbcHandle.getDbcFromFile(path1);
         } catch (Exception exception) {
@@ -61,48 +61,6 @@ public class DbcTest {
         }
     }
 
-    /**
-     * 测试发送
-     */
-    @Test
-    public void mappingTest2() throws Exception {
-        /* 1.完成DBC和数据模型的绑定。 */
-        String path1 = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\大屏协议（测试版2）GBK编码.dbc";
-        CanDataModel model = new CanDataModel();
-
-
-        CanObjectMapManager manager = CanObjectMapManager.getInstance();
-        manager.registerDBC("testDbc",path1);
-        manager.registerData(model);
-
-        /* 2.获取CAN收发对象 */
-        CanIO canIO = manager.getCanIo("testDbc");
-
-        model.fanGearReq = 7 ;
-        int[] canData = canIO.concurrentModelToCan(id);
-        System.out.println("canData = "+Arrays.toString(canData));
-    }
-
-    /**
-     * 测试接收
-     */
-    @Test
-    public void mappingTest3() throws Exception {
-        /* 1.完成DBC和数据模型的绑定。 */
-        String path1 = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\大屏协议（测试版2）GBK编码.dbc";
-        CanDataModel model = new CanDataModel();
-
-        CanObjectMapManager manager = CanObjectMapManager.getInstance();
-        manager.registerDBC("testDbc",path1);
-        manager.registerData(model);
-
-        /* 2.获取CAN收发对象*/
-        CanIO canIO = manager.getCanIo("testDbc");
-        byte[] data8 = new byte[]{0, 0, 3, 55, 0, 0, 0, 0};
-
-        canIO.concurrentCanToModel(id,data8);
-        System.out.println("canData = "+ model);
-    }
     @Test
     public void mapTest(){
 

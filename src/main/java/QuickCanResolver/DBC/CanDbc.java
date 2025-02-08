@@ -8,25 +8,13 @@ import java.util.Set;
 /**
  *  单个dbc对象
  */
-public class CanChannel {
+public class CanDbc {
     /** 节点列表 Set集合不重复*/
-    Set<String> canNodeSet = new HashSet<>();
+    Set<String> canNodeSet;
     /** 消息列表 。键记录消息ID值，值记录消息的对象 LinkedHashMap ，记录的是 newMsgIDCode，注意*/
-    Map<Integer, CanMessage> intMsgMap = new LinkedHashMap<>();
+    Map<Integer, CanMessage> intMsgMap;
 
-    protected CanChannel(){
-    }
-    public static CanChannel getEmptyDbc(){
-        return new CanChannel();
-    }
 
-    public void addCanNodeSet(Set<String> data){
-        canNodeSet.addAll(data);
-    }
-
-    public Map<Integer, CanMessage> getIntMsgMap() {
-        return intMsgMap;
-    }
     /**
      * 根据Map插入顺序获取 DBC Message对象。实际用于在添加信号sig时，获取刚插入的消息msg。并将sig添加到msg中。
      * @param index 你想要获取的索引值
@@ -64,15 +52,25 @@ public class CanChannel {
      * @param signalTag 信号标签
      * @return 返回一个信号
      */
-    public CanSignal getSignal(String signalTag){
-        final CanSignal[] signals = new CanSignal[1];
-        signals[0] = null;
-        intMsgMap.values().parallelStream().forEach(msg -> {
-            if (msg.getSignalMap().get(signalTag) != null){
-                signals[0] = msg.getSignalMap().get(signalTag);
+    public CanSignal getSignal(String signalTag) {
+//        final CanSignal[] signals = new CanSignal[1];
+//        signals[0] = null;
+
+//        intMsgMap.values().parallelStream().forEach(msg -> {
+//            if (msg.getSignalMap().get(signalTag) != null){
+//                signals[0] = msg.getSignalMap().get(signalTag);
+//            }
+//        });
+        CanSignal mSig = null;
+        // 因为缺少了 messageTag ，故这里需要多一个步骤。
+        for (CanMessage mMsg : intMsgMap.values()) {
+            CanSignal temp = mMsg.getSignalMap().get(signalTag); // 这里如果在map中没有查询到，仍然有可能返回一个null
+            if (temp != null){
+                mSig = temp;
+                break;
             }
-        });
-        return signals[0];
+        }
+        return mSig;
     }
 
     /**
@@ -81,10 +79,10 @@ public class CanChannel {
      * @param messageTag 报文id
      * @return 返回一个信号。
      */
-    public CanSignal getSignal(String signalTag,int messageTag){
+    public CanSignal getSignal(String signalTag,int messageTag) {
         CanMessage msg = intMsgMap.get(messageTag);
         if (msg!= null){
-            return msg.getSignalMap().get(signalTag);
+            return msg.getSignalMap().get(signalTag); // 这里如果在map中没有查询到，仍然有可能返回一个null
         }
         return null;
     }
@@ -113,5 +111,19 @@ public class CanChannel {
         }
         return builder.toString();
     }
+    protected CanDbc(){
+        canNodeSet = new HashSet<>();
+        intMsgMap = new LinkedHashMap<>();
+    }
+    public static CanDbc getEmptyDbc(){
+        return new CanDbc();
+    }
 
+    public void addCanNodeSet(Set<String> data){
+        canNodeSet.addAll(data);
+    }
+
+    public Map<Integer, CanMessage> getIntMsgMap() {
+        return intMsgMap;
+    }
 }  ///class CANChannels

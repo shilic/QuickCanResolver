@@ -34,9 +34,9 @@ public class MyReflect {
     public static double getFieldValue(Field field,Object target) throws IllegalAccessException {
         double mCurrentValue;
         Class<?> fieldType = field.getType();
-                /*有9个预先定义好的Class对象代表8个基本类型和void,它们被java虚拟机创建,和基本类型有相同的名字boolean, byte, char, short, int, long, float, and double.
-                这8个基本类型的Class对象可以通过java.lang.Boolean.TYPE,java.lang.Integer.TYPE等来访问,同样可以通过int.class,boolean.class等来访问.
-                int.class与Integer.TYPE是等价的,但是与Integer.class是不相等的,int.class指的是int的Class对象,Integer.class是Integer的Class的类对象 */
+        /*有9个预先定义好的Class对象代表8个基本类型和void,它们被java虚拟机创建,和基本类型有相同的名字boolean, byte, char, short, int, long, float, and double.
+        这8个基本类型的Class对象可以通过java.lang.Boolean.TYPE,java.lang.Integer.TYPE等来访问,同样可以通过int.class,boolean.class等来访问.
+        int.class与Integer.TYPE是等价的,但是与Integer.class是不相等的,int.class指的是int的Class对象,Integer.class是Integer的Class的类对象 */
         if (fieldType.equals(Integer.TYPE)){ // fieldValue instanceof Integer 和 fieldType == int.class 都可以判断。但不能用 Integer.class,注意。
             mCurrentValue = field.getInt(target);
         }

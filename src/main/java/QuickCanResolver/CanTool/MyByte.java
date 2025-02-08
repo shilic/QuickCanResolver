@@ -3,9 +3,6 @@ package QuickCanResolver.CanTool;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 /**
@@ -151,23 +148,23 @@ public class MyByte {
 
     /**
      * 将byte转换为一个长度为8的bit数组，数组每个值代表一个bit，
-     * @param b 传入一个字节
+     * @param mByte 传入一个字节
      * @param type 要转换的类型  "motorola":大端模式,数据高位存放数组低位 ; "intel" :低位存放至低位
      * @return 返回一个8位的数组
      */
-    public static byte[] byteTo8Bits(byte b,DataType type) {
+    public static byte[] byteTo8Bits(byte mByte, DataType type) {
         byte[] array = new byte[8];
         switch (type){
             case Intel: default:
                 for(int i = 0;i<8;i++){
-                    array[i] = (byte)(b & 0b0000_0001); //bytes&0b00000001 //取最后一位放0
-                    b = (byte) (b >> 1); //右移
+                    array[i] = (byte)(mByte & 0b0000_0001); //bytes&0b00000001 //取最后一位放0
+                    mByte = (byte) (mByte >> 1); //右移
                 }
                 break;
             case Motorola:
                 for (int i = 7; i >= 0; i--) { //摩托罗拉格式  例如 32 = 0010 0000    0123 4567
-                    array[i] = (byte)(b & 0b0000_0001); //bytes&0b00000001 //取最后一位放最高位7   0123 4567
-                    b = (byte) (b >> 1); //右移，继续取最后一位放6，依次类推
+                    array[i] = (byte)(mByte & 0b0000_0001); //bytes&0b00000001 //取最后一位放最高位7   0123 4567
+                    mByte = (byte) (mByte >> 1); //右移，继续取最后一位放6，依次类推
                 }
                 break;
         }
@@ -179,12 +176,8 @@ public class MyByte {
      * @param bytes 长度为4的byte数组
      * @param type  要转换的类型  "motorola":大端模式,数据高位存放数组低位 ; "intel" :低位存放至低位
      * @return  32位 的bit数组
-     * @throws InputDataException 你传入的数组长度不是4
      */
-    public static byte[] from4BytesTo32Bits(byte[] bytes, DataType type) throws InputDataException {
-//        if(bytes.length !=4){
-//            throw new InputDataException("你传入的数组长度不是4");
-//        }
+    public static byte[] from4BytesTo32Bits(byte[] bytes, DataType type) {
         long t = from4bytesToLong(bytes,type);   //把4个byte组合成一个int
         byte[] re =new byte[32];  //例如传入一个4位字节数组，那么长度就是32个bit
         switch (type){
@@ -209,12 +202,8 @@ public class MyByte {
      * @param bytes 长度是8的byte数组
      * @param type 要转换的类型  "motorola":大端模式,数据高位存放数组低位 ; "intel" :低位存放至低位
      * @return  64个bits数组，每个表示0或者1
-     * @throws InputDataException 你传入的数组长度不是8
      */
-    public static byte[] from8BytesTo64Bits(byte[] bytes, DataType type) throws InputDataException {
-//        if(bytes.length !=8){
-//            throw new InputDataException("你传入的数组长度不是8");
-//        }
+    public static byte[] from8BytesTo64Bits(byte[] bytes, DataType type) {
         byte[] bits = new byte[64];
         for(int i=0;i<8;i++){
             System.arraycopy(byteTo8Bits(bytes[i],type),0,bits,i*8,8); //默认摩托罗拉格式
@@ -233,19 +222,10 @@ public class MyByte {
      * @param bits 任意长度的 bits数组
      * @param type 要转换的类型  "motorola":大端模式,数据高位存放数组低位 ; "intel" :低位存放至低位
      * @return 一个int型数据
-     * @throws InputDataException 1. 你传入的数组大小 大于了32。 2. 你传入的数组不是bit数组，请确保数组每一个值不是0就是1。
      */
-    public static int bitsToInt(byte[] bits,DataType type) throws InputDataException {
+    public static int bitsToInt(byte[] bits,DataType type) {
         int re = 0;
         int len = bits.length;
-//        if( len > 32){
-//            throw new InputDataException("你传入的数组大小 大于了32");
-//        }
-//        for(byte bit:bits){
-//            if( ! (bit==0||bit==1)){
-//                throw new InputDataException("你传入的数组不是bit数组，请确保数组每一个值不是0就是1。");
-//            }
-//        }
         switch (type){
             case Intel: default:
                 for(int i = len-1; i>=0;i--){  //数据高位存放到高位；把数据低位存放到低位
@@ -267,17 +247,8 @@ public class MyByte {
      * @param bits 8个比特的数组，每个元素为一个bit,不是0就是1
      * @param type 转换类型 "motorola":大端模式,数据高位存放数组低位 ; "intel" :低位存放至低位
      * @return 一个byte数据 ,采用int表示
-     * @throws InputDataException 你传入的数组大小不是8。 或者  你传入的数组不是bit数组，请确保数组每一个值不是0就是1。
      */
-    public static int from8bitsToByte(byte[] bits, DataType type) throws InputDataException { //传入8个bit 变成一个byte //低位在低位，高位在高位
-//        if(bits.length !=8){
-//            throw new InputDataException("你传入的数组大小不是8。");
-//        }
-//        for(byte bit:bits){
-//            if( ! (bit==0||bit==1)){
-//                throw new InputDataException("你传入的数组不是bit数组，请确保数组每一个值不是0就是1。");
-//            }
-//        }
+    public static int from8bitsToByte(byte[] bits, DataType type) { //传入8个bit 变成一个byte //低位在低位，高位在高位
         int b = 0b0000_0000;
         switch (type){
             case Intel: default:
@@ -302,9 +273,8 @@ public class MyByte {
      * @param bits64 传入一个 大小为64的 bit数组
      * @param type 转换类型 "motorola":大端模式,数据高位存放数组低位 ; "intel" :低位存放至低位
      * @return 一个大小为8的 byte数组，用int表示
-     * @throws InputDataException 1.你传入的数组大小不是64。2.你传入的数组不是bit数组，请确保数组每一个值不是0就是1。
      */
-    public static int[] from64bitsTo8BytesI(byte[] bits64, DataType type) throws InputDataException {
+    public static int[] from64bitsTo8BytesI(byte[] bits64, DataType type) {
         int[] re = new int[8];
         // 1. Arrays.copyOfRange 方法，从 bits64数组中取8个数出来，
         // 2. 再用 from8bitsToByte 方法 把这个数组变成一个 byte ,
@@ -320,9 +290,8 @@ public class MyByte {
      * @param bits 传入的长度为32的比特数组，每一位元素必须是0或者1.
      * @param type 要转换的类型  "motorola":大端模式,数据高位存放数组低位 ; "intel" :低位存放至低位
      * @return 返回值 得到一个 int型整数 ,用 long来表示，可根据需要转换成 int
-     * @throws InputDataException  1. 你传入的数组大小不是32。 2.你传入的数组不是bit数组，请确保数组每一个值不是0就是1。
      */
-    public static long from32bitsToInt(byte[] bits, DataType type) throws InputDataException {
+    public static long from32bitsToInt(byte[] bits, DataType type) {
         long re = 0x0000_0000L;
         switch (type){
             case Intel: default:
@@ -354,12 +323,8 @@ public class MyByte {
      * @param bytes 传入长度为4的字节数组
      * @param type 要转换的类型  "motorola":大端模式,数据高位存放数组低位 ; "intel" :低位存放至低位
      * @return int 返回由这4位数组组成的int型数据
-     * @throws InputDataException 你传入的数组长度不是4
      */
-    public static int from4bytesToInt(byte[] bytes, DataType type) throws InputDataException {
-//        if(bytes.length !=4){
-//            throw new InputDataException("你传入的数组长度不是4");
-//        }
+    public static int from4bytesToInt(byte[] bytes, DataType type) {
         int ans=0;
         switch (type){
             case Intel: default:
@@ -382,12 +347,8 @@ public class MyByte {
      * @param bytes 传入一个长度为4的字节数组
      * @param type 要转换的类型  "motorola":大端模式,数据高位存放数组低位 ; "intel" :低位存放至低位
      * @return long 返回由这4位数组组成的long型数据
-     * @throws InputDataException 你传入的数组长度不是4
      */
-    public static long from4bytesToLong(byte[] bytes, DataType type) throws InputDataException {
-//        if(bytes.length !=4) {
-//            throw new InputDataException("你传入的数组长度不是4");
-//        }
+    public static long from4bytesToLong(byte[] bytes, DataType type){
         long ans=0;
         switch (type) {
             case Intel: default:
@@ -549,9 +510,10 @@ public class MyByte {
     } //bytePrint
 
     /**
-     *  为了提高框架运行效率，现将校验删除，故尝试去掉报错检测。
+     *  @deprecated 为了提高框架运行效率，现将校验删除，故尝试去掉报错检测。
      */
-    public static class InputDataException extends Exception {
+    @Deprecated
+    public static class InputDataException extends RuntimeException {
         public InputDataException(String message) {
             super(message);
         }

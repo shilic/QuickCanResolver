@@ -10,11 +10,23 @@ import java.util.Set;
  */
 public class CanDbc {
     /** 节点列表 Set集合不重复*/
-    Set<String> canNodeSet;
+    protected Set<String> canNodeSet;
     /** 消息列表 。键记录消息ID值，值记录消息的对象 LinkedHashMap ，记录的是 newMsgIDCode，注意*/
-    Map<Integer, CanMessage> intMsgMap;
+    protected final Map<Integer, CanMessage> intMsgMap;
+    public final String dbcTag ;
+    /** 用于判断是否 绑定 数据模型 （整体上） */
+    protected boolean modelBind = false ;
+    protected Object dataModel ;
 
 
+    public void bindModel(Object dataModel) {
+        this.dataModel = dataModel;
+        this.modelBind = true ;
+    }
+    public void clearModel() {
+        modelBind = false ;
+        dataModel = null ;
+    }
     /**
      * 根据Map插入顺序获取 DBC Message对象。实际用于在添加信号sig时，获取刚插入的消息msg。并将sig添加到msg中。
      * @param index 你想要获取的索引值
@@ -43,34 +55,27 @@ public class CanDbc {
      * @param msgId 报文id
      * @return 返回一个报文对象
      */
+    @Deprecated
     public CanMessage getMsg(int msgId){
         return intMsgMap.get(msgId);
     }
 
     /**
-     * 根据信号名称，获取一个信号。<br>使用并行流，同时查询所有msg.
+     * 根据信号名称，获取一个信号。<br>
      * @param signalTag 信号标签
      * @return 返回一个信号
      */
     public CanSignal getSignal(String signalTag) {
-//        final CanSignal[] signals = new CanSignal[1];
-//        signals[0] = null;
-
-//        intMsgMap.values().parallelStream().forEach(msg -> {
-//            if (msg.getSignalMap().get(signalTag) != null){
-//                signals[0] = msg.getSignalMap().get(signalTag);
-//            }
-//        });
-        CanSignal mSig = null;
+        CanSignal signal = null;
         // 因为缺少了 messageTag ，故这里需要多一个步骤。
-        for (CanMessage mMsg : intMsgMap.values()) {
-            CanSignal temp = mMsg.getSignalMap().get(signalTag); // 这里如果在map中没有查询到，仍然有可能返回一个null
+        for (CanMessage canMessage : intMsgMap.values()) {
+            CanSignal temp = canMessage.getSignalMap().get(signalTag); // 这里如果在map中没有查询到，仍然有可能返回一个null
             if (temp != null){
-                mSig = temp;
+                signal = temp;
                 break;
             }
         }
-        return mSig;
+        return signal;
     }
 
     /**
@@ -79,10 +84,10 @@ public class CanDbc {
      * @param messageTag 报文id
      * @return 返回一个信号。
      */
-    public CanSignal getSignal(String signalTag,int messageTag) {
-        CanMessage msg = intMsgMap.get(messageTag);
-        if (msg!= null){
-            return msg.getSignalMap().get(signalTag); // 这里如果在map中没有查询到，仍然有可能返回一个null
+    public CanSignal getSignal(String signalTag, int messageTag) {
+        CanMessage canMessage = intMsgMap.get(messageTag);
+        if (canMessage != null){
+            return canMessage.getSignalMap().get(signalTag); // 这里如果在map中没有查询到，仍然有可能返回一个null
         }
         return null;
     }
@@ -93,6 +98,17 @@ public class CanDbc {
      */
     public String getCanNodeInfo(){
         return canNodeSet.toString();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder("CanDbc{");
+        builder.append("dbcTag : ").append(dbcTag).append(";\n");
+        for (CanMessage msg : intMsgMap.values()){
+            builder.append("CanMessage{CAN报文名称 : ").append(msg.msgName).append(", ").append("信号列表 : ").append(msg.signalMap.values()).append("}\n");
+        }
+        builder.append("}; ");
+        return builder.toString();
     }
 
     /**
@@ -111,12 +127,13 @@ public class CanDbc {
         }
         return builder.toString();
     }
-    protected CanDbc(){
+    protected CanDbc(String dbcTag){
+        this.dbcTag = dbcTag;
         canNodeSet = new HashSet<>();
         intMsgMap = new LinkedHashMap<>();
     }
-    public static CanDbc getEmptyDbc(){
-        return new CanDbc();
+    public static CanDbc getEmptyDbc(String dbcTag){
+        return new CanDbc(dbcTag);
     }
 
     public void addCanNodeSet(Set<String> data){
@@ -125,5 +142,9 @@ public class CanDbc {
 
     public Map<Integer, CanMessage> getIntMsgMap() {
         return intMsgMap;
+    }
+
+    public Object getDataModel() {
+        return dataModel;
     }
 }  ///class CANChannels

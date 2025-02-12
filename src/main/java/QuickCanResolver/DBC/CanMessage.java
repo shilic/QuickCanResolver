@@ -1,8 +1,8 @@
 package QuickCanResolver.DBC;
 
-import QuickCanResolver.CanDataEnum.CANMsgIdType;
-import QuickCanResolver.CanDataEnum.MsgSendType;
-import QuickCanResolver.CanDataEnum.MsgType;
+import QuickCanResolver.DBC.CanDataEnum.CANMsgIdType;
+import QuickCanResolver.DBC.CanDataEnum.MsgSendType;
+import QuickCanResolver.DBC.CanDataEnum.MsgType;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -29,19 +29,19 @@ public class CanMessage {  //编程第一步，定义数据结构
     protected final long msgIDCode;
     /** 信号类型默认为 扩展帧 Extended 。<br> 可选值为 Standard 和 Extended 。<br>标准帧 Standard 范围 0x0~0x7FF ; <br>扩展帧 Extended 范围 0x0~0x1FFF_FFFF 。*/
     protected final CANMsgIdType msgIdType ;
-    /** 报文发送类型 默认为周期型 . 暂时不打算更新对周期型的识别*/
+    /** 报文发送类型 默认为周期型 。TODO 暂时不打算更新对周期型的识别 */
     protected MsgSendType msgSendType = MsgSendType.Cycle;
-    /** 报文周期时间 毫秒 。 预留，暂时不打算识别*/
+    /** 报文周期时间 毫秒 。 TODO 预留，暂时不打算识别 */
     protected int msgCycleTime ;
     /** 报文长度 单位: byte*/
     private final int msgLength ;  //MsgLength(Byte)
-    /** 报文注释*/
+    /** 报文注释 */
     protected String msgComment = "" ;
     protected final String nodeName  ;
     /** 发送节点 , 当前报文的节点名称, 节点名称默认为 Vector__XXX*/
     protected Set<String> msgSendNodeList = new HashSet<>();
     /** 信号列表 ; 键指信号的名称, 值指的是信号 */
-    protected Map<String, CanSignal> signalMap = new ConcurrentHashMap<>();
+    protected final Map<String, CanSignal> signalMap = new ConcurrentHashMap<>();
 
     public int getMsg_ID() {
         return msg_ID;
@@ -51,13 +51,13 @@ public class CanMessage {  //编程第一步，定义数据结构
     }
     @Override
     public String toString() {
-        return " {消息名称:"+msgName+"}";
+        return "CanMessage{CAN报文名称:"+msgName+"}";
     }  //toString()
     /**
      * 获取报文基本信息
      * @return 返回字符串
      */
-    public String getMsgBaseInfo(){
+    public String getMsgBaseInfo() {
         return  "\n--消息名称:"+msgName+",报文标识符:"
                 +Integer.toString(Math.toIntExact(msg_ID),16)+",信号ID类型:"+msgIdType+
                 ",报文发送类型:"+msgSendType+",报文周期(单位:毫秒):"+msgCycleTime+",报文长度(单位byte):"+ msgLength +
@@ -70,7 +70,7 @@ public class CanMessage {  //编程第一步，定义数据结构
     public String getMsgValue(){
         StringBuilder builder = new StringBuilder();
         builder.append("报文名称：").append(msgName).append(";\n");
-        signalMap.values().forEach(sig -> builder.append("信号 : ").append(sig.getSignalName()).append(" = ").append(sig.getFieldValue()).append(";\n"));
+        signalMap.values().forEach(sig -> builder.append("信号 : ").append(sig.getSignalName()).append(" = ").append(sig.readValue()).append(";\n"));
         return builder.toString();
     }
     public CanMessage(String msgName, int msg_ID, long msgIDCode, CANMsgIdType msgIdType, int msgLength, String nodeName) {

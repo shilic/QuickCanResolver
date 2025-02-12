@@ -1,7 +1,6 @@
 package QuickCanResolver.DBC;
 
-import QuickCanResolver.CanDataEnum.*;
-import QuickCanResolver.CanTool.MyReflect;
+import QuickCanResolver.DBC.CanDataEnum.*;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -44,7 +43,8 @@ public class CanSignal {
     protected double iniValuePhys = 0;
     /** 总线初始值 */
     protected double iniValueHex = 0;
-    /** 当前信号的值 */
+    /** 当前信号的值 。TODO 如果采用 ViewModel，将没有 field
+     * */
     @Deprecated
     public volatile double currentValue ;
     /** 值是否无效 ,true表示有效，如 接受到信号值全为1，例如0XFF，则表示无效。是否使用这个变量，取决于用户。<br>
@@ -59,11 +59,11 @@ public class CanSignal {
     /** 单位*/
     protected final String unit ;
     /** 接收节点列表 默认值 Vector__XXX*/
-    final Set<String> sigReceiveNodeSet ;
+    protected final Set<String> sigReceiveNodeSet ;
     /** 用于标记该信号属于哪个数据模型 */
-    Object target;
-    /** 用于标记属于哪个字段 */
-    Field field;
+    protected Object dataModel;
+    /** 用于标记属于哪个字段 。如果 */
+    protected Field field ;
 
     /**
      * 查询该信号是否绑定字段
@@ -72,51 +72,65 @@ public class CanSignal {
     public boolean isFieldBind(){
         return field != null;
     }
+    /**
+     * 设置字段的值 。 建议先调用 isFieldBind()。查询是否有绑定字段
+     * @param sigValue 信号值
+     */
+    public void writeValue(double sigValue) {
+        setFieldValue(sigValue);
+    }
 
-    public boolean setFieldValue(double sigValue){
-        if (! isFieldBind()){ // 如果这个信号没有绑定字段，则不写入值
+    /**
+     * 获取字段的值。
+     * @return 返回 double 格式的值
+     */
+    public double readValue() {
+        return getFieldValue() ;
+    }
+
+    protected boolean setFieldValue(double sigValue) {
+        if (! isFieldBind()) { // 如果这个信号没有绑定字段，则不写入值
             return false;
         }
-        try {
-            MyReflect.setFieldValue(field, target, sigValue);
-            return true;
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+        SignalIOService.setFieldValue(field, dataModel, sigValue);
+        return true;
+    }
+    public boolean setFieldValue(double sigValue,Object newModel) {
+        if (! isFieldBind()) { // 如果这个信号没有绑定字段，则不写入值
             return false;
         }
+        SignalIOService.setFieldValue(field, newModel, sigValue);
+        return true;
     }
-    public double getFieldValue(){
-        if (! isFieldBind()){
+
+    protected double getFieldValue() {
+        if (! isFieldBind()) { // 如果这个信号没有绑定字段
             return 0;
         }
-        try {
-            return MyReflect.getFieldValue(field,target);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            return 0;
-        }
+        return SignalIOService.getFieldValue(field, dataModel);
     }
+
 
 
     @Override
     public String toString() {
-        return "{信号名称:"+signalName+"}";
+        return signalName;
     }  //toString()
     public String getSignalInfo() {
         return "{\n信号名称:"+signalName+",\n多路复用:"+ groupType +" ,组号:"+groupNumber+",信号注释:"+signalComment+
                 ",\n信号排列方式:"+byteOrder+",信号起始位:"+startBit+",信号长度:"+bitLength+",\n信号数据类型:"+dataType+
                 ",精度:"+factor+",偏移量:"+offset+",\n物理最小值:"+signalMinValuePhys+",物理最大值:"+signalMaxValuePhys+
                 ",\n单位:"+unit+",接收节点列表 : "+ getReceiveNodeListCode() +",\n}";
-        ///+",\n    信号值描述: "+ this.getStrValueTable()
     }
     /**
-     * 生成 接受节点列表编码,如 VCU,GW,TCU,CanIO ;<br>如果为空(即用户没有标记接收节点)，则返回 Vector__XXX;<br>
+     * 生成 接受节点列表编码,如 VCU,GW,TCU,CanIOHandler ;<br>
+     * 如果为空(即用户没有标记接收节点)，则返回 Vector__XXX;<br>
      * @return 接受节点列表编码
      */
     String getReceiveNodeListCode(){
         StringBuilder reNodeListCodeBuilder = new StringBuilder();
         if( sigReceiveNodeSet != null && sigReceiveNodeSet.size() >= 1 ) { // sigReceiveNodes != null &&   --- (length = sigReceiveNodes.length)
-            // 生成节点列表，如 VCU,GW,TCU,CanIO 最后一个没有逗号
+            // 生成节点列表，如 VCU,GW,TCU,CanIOHandler 最后一个没有逗号
             for (String node : sigReceiveNodeSet) {
                 reNodeListCodeBuilder.append(node).append(",");
             }
@@ -129,8 +143,8 @@ public class CanSignal {
     /**
      * 构造函数，采用 final 字段的形式对代码进行了优化，保证数据字段的只读，及可见性，防止意外修改。
      */
-    public CanSignal(String signalName, GroupType groupType,int groupNumber, CANByteOrder byteOrder, int startBit, int bitLength, CANDataType dataType,
-                     double factor, double offset, double signalMinValuePhys, double signalMaxValuePhys, String unit,Set<String> sigReceiveNodeSet) {
+    public CanSignal(String signalName, GroupType groupType, int groupNumber, CANByteOrder byteOrder, int startBit, int bitLength, CANDataType dataType,
+                     double factor, double offset, double signalMinValuePhys, double signalMaxValuePhys, String unit, Set<String> sigReceiveNodeSet) {
         this.signalName = signalName;
         this.groupType = groupType;
         this.groupNumber = groupNumber;
@@ -146,8 +160,8 @@ public class CanSignal {
         this.sigReceiveNodeSet = sigReceiveNodeSet;
     }
 
-    public void setTarget(Object target) {
-        this.target = target;
+    public void setDataModel(Object dataModel) {
+        this.dataModel = dataModel;
     }
     public void setField(Field field) {
         this.field = field;
@@ -158,9 +172,11 @@ public class CanSignal {
     public String getSignalComment() {
         return signalComment;
     }
-    public Object getTarget() {
-        return target;
+    @Deprecated
+    public Object getDataModel() {
+        return dataModel;
     }
+    @Deprecated
     public Field getField() {
         return field;
     }

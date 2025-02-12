@@ -1,4 +1,4 @@
-package QuickCanResolver.CanDataEnum;
+package QuickCanResolver.DBC.CanDataEnum;
 
 /**
  * 报文发送类型  Cycle, Event, IfActive,CE,CA;

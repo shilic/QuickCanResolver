@@ -1,9 +1,9 @@
 package QuickCanResolver.CanHandle;
 
-import QuickCanResolver.CanDataEnum.CANByteOrder;
-import QuickCanResolver.CanDataEnum.CANDataType;
-import QuickCanResolver.CanDataEnum.CANMsgIdType;
-import QuickCanResolver.CanDataEnum.GroupType;
+import QuickCanResolver.DBC.CanDataEnum.CANByteOrder;
+import QuickCanResolver.DBC.CanDataEnum.CANDataType;
+import QuickCanResolver.DBC.CanDataEnum.CANMsgIdType;
+import QuickCanResolver.DBC.CanDataEnum.GroupType;
 import QuickCanResolver.DBC.CanDbc;
 import QuickCanResolver.DBC.CanMessage;
 import QuickCanResolver.DBC.CanSignal;
@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
  * 用于处理将DBC文件解析为DBC对象，也就是反向操作。注意，暂时不支持报文分组，parseSG函数中，已经被我删去相关代码。
  */
 public class DbcHandle {
+    static final String Vector__XXX = "Vector__XXX";
     static String regex = "SG_\\s*(?<sigName>\\b[a-zA-Z_]\\w*)\\s*(?<group>[mM]\\d*)?\\s*:" +
             "\\s*(?<startBit>\\d+)\\s*[|]\\s*(?<bitLength>\\d+)@(?<ByteOrder>[10])(?<DataType>[+-])"+
             "\\s*\\((?<Factor>-?\\b\\d[\\d.]*),(?<Offset>-?\\b\\d[\\d.]*)\\)\\s*\\[(?<min>-?\\b\\d[\\d.]*)\\|(?<max>-?\\b\\d[\\d.]*)\\]\\s*" +
@@ -29,7 +30,7 @@ public class DbcHandle {
      * @param filePath 文件路径
      * @return 返回一个DBC对象
      */
-    public static CanDbc getDbcFromFile(String filePath) {
+    public static CanDbc getDbcFromFile(String dbcTag,String filePath) {
         File file = new File(filePath);
         if(!file.exists()){ //如果文件不存在，退出
             //System.out.println("如果文件不存在，退出");
@@ -47,7 +48,7 @@ public class DbcHandle {
             //System.out.println("不是DBC文件，退出");
             throw new RuntimeException("获取DBC文件发生错误，该文件不是DBC文件");
         }
-        CanDbc dbc = CanDbc.getEmptyDbc();
+        CanDbc dbc = CanDbc.getEmptyDbc(dbcTag);
         Map<Integer, CanMessage> messagesMap = dbc.getIntMsgMap();
         try (
                 FileInputStream fis = new FileInputStream(filePath);
@@ -55,7 +56,6 @@ public class DbcHandle {
                 BufferedReader br = new BufferedReader(isr)
                 ){
             String line;
-            //System.out.println("开始读取DBC文件");
             /* 依次得到每行内容 每行开头的内容分为以下9种： BU_: 节点 ; BO_  消息; SG_ 信号; BO_TX_BU_ 消息传输节点;
              * CM_ 注释; BA_DEF_ 自定义属性的定义; BA_DEF_DEF_ 自定义属性的初始值;
              * BA_ 自定义属性的具体值; VAL_ 值描述
@@ -95,6 +95,7 @@ public class DbcHandle {
             } // while 循环读取文件
         } catch (IOException e) { // IO异常，获取CanMessage时，可能会发生 ExcelSheetException 异常
             e.printStackTrace();
+            throw new RuntimeException("获取DBC文件发生错误，IO异常");
         }
         //System.out.println(" CAN通道信息打印 = \n"+dbc.getChannelInfo());
         return dbc;
@@ -102,19 +103,19 @@ public class DbcHandle {
 
     /**
      * 解析信号，暂不支持报文分组。
-     * @param line 传入单行数据，例如 : SG_ emb_forceSwitch_req : 8|1@1+ (1,0) [0|1] "" CanIO    <br>
-     *   SG_ test_Signal_14 m2 : 24|8@1+ (0.1,-5.55) [-5|20.5] ""  CanIO,CCS
+     * @param line 传入单行数据，例如 : SG_ emb_forceSwitch_req : 8|1@1+ (1,0) [0|1] "" CanIOHandler    <br>
+     *   SG_ test_Signal_14 m2 : 24|8@1+ (0.1,-5.55) [-5|20.5] ""  CanIOHandler,CCS
      * @return 返回一个CAN信号 CanSignal
      */
     public static CanSignal parseSG(String line) {
         line = line.trim();
         if ( ! line.startsWith("SG_")){
-            throw new RuntimeException("CAN信号解析失败,该行不是信号，原始数据line为:"+line);
+            throw new RuntimeException("DBC文件识别异常,该行不是信号，原始数据line为:"+line);
         }
 
         Matcher sigMatch =  Pattern.compile(regex).matcher(line);
         if(! sigMatch.find()){
-            throw new RuntimeException("CAN信号解析失败,原始数据line为:"+line);
+            throw new RuntimeException("DBC文件识别异常,原始数据line为:"+line);
         }
         /* 原始数据（待解析） */
         String sigNameStr = sigMatch.group("sigName");
@@ -139,9 +140,9 @@ public class DbcHandle {
                 String groupM = m.group("M");
                 String numStr = m.group("num");
                 if (groupM != null){
-                    groupType = GroupType.Group_Flag;
-                    /* 这里可能抛出异常，等后期再添加对报文分组类型的识别 */
-                    //throw new RuntimeException("暂不支持对CAN报文进行分组");
+                    // groupType = GroupType.Group_Flag;
+                    // TODO 这里可能抛出异常，等后期再添加对报文分组类型的识别
+                    throw new RuntimeException("DBC文件识别异常，暂不支持对CAN报文进行分组");
                 }
                 if (numStr != null){
                     groupType = GroupType.Group_Number;
@@ -168,7 +169,7 @@ public class DbcHandle {
         }
         Set<String> receiveNodeSet  = new HashSet<>();
         if (receiveNodeStr != null){
-            Matcher nodeM = Pattern.compile("(?<node>\\b[a-zA-Z_]\\w*)").matcher(receiveNodeStr); //如  CanIO,CCS
+            Matcher nodeM = Pattern.compile("(?<node>\\b[a-zA-Z_]\\w*)").matcher(receiveNodeStr); //如  CanIOHandler,CCS
             while (nodeM.find()){
                 String nodeItem = nodeM.group("node");
                 if (nodeItem != null){
@@ -177,7 +178,7 @@ public class DbcHandle {
             }
         }
         else {
-            receiveNodeSet.add("Vector__XXX");
+            receiveNodeSet.add(Vector__XXX);
         }
         return new CanSignal(sigNameStr,groupType,groupNum,byteOrder,startBit,bitLength,dataType,factor,offset,min,max,unitStr,receiveNodeSet);
     } // parseSG
@@ -190,12 +191,12 @@ public class DbcHandle {
     public static CanMessage parseBO(String line){
         line = line.trim();
         if ( ! line.startsWith("BO_")){
-            throw new RuntimeException("CAN消息解析失败，该行不是CAN消息，原始line="+line);
+            throw new RuntimeException("DBC文件识别异常，该行不是CAN消息，原始line="+line);
         }
         Pattern msgPattern = Pattern.compile("BO_\\s*(?<longIdCode>\\d+)\\s*(?<msgName>\\b[a-zA-Z_]\\w*)\\s*:\\s*(?<length>\\d)\\s*(?<node>\\b[a-zA-Z_]\\w*)");
         Matcher msgMatch = msgPattern.matcher(line);
         if (! msgMatch.find()) {
-            throw new RuntimeException("CAN消息解析失败，原始line="+line);
+            throw new RuntimeException("DBC文件识别异常，原始line="+line);
         }
         String strIdCode = msgMatch.group("longIdCode");// 需要转换格式
         String msgName = msgMatch.group("msgName");
@@ -213,7 +214,7 @@ public class DbcHandle {
         }
         int msgLength = Integer.parseInt(strLength);
         if (strNode == null){
-            strNode = "Vector__XXX";
+            strNode = Vector__XXX;
         }
         return new CanMessage(msgName,msgId,longIdCode,msgIdType,msgLength,strNode);
         //System.out.println(" msg = "+msg.getMsgBaseInfo());
@@ -235,14 +236,14 @@ public class DbcHandle {
 
     /**
      * 解析节点
-     * @param line 传入单行字符串，例如 : BU_: GW CCS CanIO VCU
+     * @param line 传入单行字符串，例如 : BU_: GW CCS CanIOHandler VCU
      * @return 返回节点列表
      */
     public static Set<String> parseBU(String line) {
         Set<String> nodeSet = new HashSet<>();
         line = line.trim();
         if ( ! line.startsWith("BU_:")){// 识别节点信息
-            throw new RuntimeException("CAN消息解析失败，该行不是节点信息，原始line="+line);
+            throw new RuntimeException("DBC文件识别异常，该行不是节点信息，原始line="+line);
         }
         /* 正则表达式，用于解析文件 */
         Pattern nodePattern = Pattern.compile("(\\s+(?<node>[a-zA-Z_]*))");

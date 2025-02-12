@@ -1,9 +1,7 @@
-import QuickCanResolver.CanHandle.CanIO;
-import QuickCanResolver.CanHandle.CanObjectMapManager;
+import QuickCanResolver.CanHandle.CanIOHandler;
 import QuickCanResolver.CanHandle.DbcHandle;
 import QuickCanResolver.DBC.CanDbc;
 import QuickCanResolver.DBC.CanSignal;
-import Demo.CanDataModel;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -19,15 +17,15 @@ public class DbcTest {
         String path1 = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\大屏协议（测试版2）GBK编码.dbc";
         CanDbc dbc = null;
         try {
-            dbc = DbcHandle.getDbcFromFile(path1);
+            dbc = DbcHandle.getDbcFromFile("testDbc",path1);
         } catch (Exception exception) {
             exception.printStackTrace();
         }
         assert dbc != null;
-        CanIO canIO = new CanIO(dbc);
+        CanIOHandler canIOHandler = new CanIOHandler(dbc);
         id = 0x1898_2418;
         byte[] data8 = new byte[]{10, 3, (byte) 143, 0, 0, 0, 0, 0}; // {20,55, (byte) 0b1000_1111,55,55,55,55,55}
-        canIO.concurrentCanDataToDbc(id,data8);
+        canIOHandler.concurrentCanDataToDbc(id,data8);
         System.out.println("接收报文 Msg = "+dbc.getMsg(id).getMsgValue());
         /*  测试数据： byte[] data8 = new byte[]{10,3, (byte) 0b10001000,55,55,55,55,55};
         * 测试结果：
@@ -38,7 +36,7 @@ public class DbcTest {
         信号 : test_Signal_14 = -5.55;
         信号 : CCSToCabin1_FanGearReq = 15.0;
         *  */
-        int[] ints = canIO.concurrentDbcToCanData(id);
+        int[] ints = canIOHandler.concurrentDbcToCanData(id);
         System.out.println("发送报文 = "+ Arrays.toString(ints));
         // 至此，报文的接收和发送均无问题。
     }
@@ -47,11 +45,11 @@ public class DbcTest {
      */
     @Test
     public void mappingTest1(){
-        //CanObjectMapManager.getAnnotatedFields(CanDataModel.class);
+        //CanObjectMapManager.getAnnotatedFields(ExampleDataModel.class);
         String path1 = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\大屏协议（测试版2）GBK编码.dbc";
         CanDbc dbc = null;
         try {
-            dbc = DbcHandle.getDbcFromFile(path1);
+            dbc = DbcHandle.getDbcFromFile("testDbc",path1);
         } catch (Exception exception) {
             exception.printStackTrace();
         }

@@ -1,4 +1,4 @@
-package QuickCanResolver.CanDataEnum;
+package QuickCanResolver.DBC.CanDataEnum;
 
 /*
 分组类型，或者说分组模式、即多路复用。当你需要在一个报文矩阵中的同一个位置，塞入两个或以上的报文时，就需要采用多路复用，也就是分组功能。

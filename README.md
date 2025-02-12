@@ -325,7 +325,7 @@ public class Model2 {
 是个什么意思，对，这就是本框架的核心思想。通过一行注解，将车身数据模型与DBC的信号进行一对一绑定，在解析报文和封装报文的时候，只需要一句就可以了，就像下边这样
 
 ```java
- canIO.canDataToModel(id,data8_);
+ canIOHandler.canDataToModel(id,data8_);
 ```
 
 你只需要传入报文id和原始的CAN数据即可，剩下的交给框架来解决，框架会自动解析原始CAN报文到你注解的字段中。所有操作都只需要一行，极大的简化了编程操作。
@@ -347,10 +347,10 @@ public class Model2 {
         manager.registerData(model); // 绑定数据模型
 
         /* 2.获取CAN收发对象 */
-        CanIO canIO = manager.getCanIo("testDbc");
+        CanIO canIOHandler = manager.getCanIo("testDbc");
 // 以下代码用于测试报文的  接收
             byte[] data8_ = new byte[]{30, 29, 28, 20, (byte) 211, 121, (byte) 200, 100};
-            canIO.canDataToModel(id,data8_); // 解析一个CAN报文
+            canIOHandler.canDataToModel(id,data8_); // 解析一个CAN报文
             System.out.println("model = "+ model.getMsg1Value()); // 打印实际数据，验证是否解析成功
 ```
 

@@ -1,82 +1,118 @@
-import Demo.Model2;
-import QuickCanResolver.CanHandle.CanData;
-import QuickCanResolver.CanHandle.CanIO;
+import Demo.CarDataModel;
+import QuickCanResolver.CanHandle.CanFrameData;
+import QuickCanResolver.CanHandle.CanIOHandler;
 import QuickCanResolver.CanHandle.CanObjectMapManager;
-import QuickCanResolver.CanTool.MyByte;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class CanIOTest {
-    int num = 10000;
+public class CanIOHandlerTest {
+    static int num = 100000;
+    static final int loopTime = 100000;
     static final int msg1_Id = 0x18AB_AB01 ; // message1
     static final int msg2_Id = 0x18AB_AB02; //
     static final int msg3_Id = 0x18AB_AB03; //
     /* 1.完成DBC和数据模型的绑定。 */
-    String path1 = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\Example.dbc";
-    Model2 model = new Model2();
+    static String path1 = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\Example.dbc";
+
+    /** model = Msg1 = { <br>
+     msg1_sig1 :30,<br>
+     msg1_sig2 :29,<br>
+     msg1_sig3 = 28,<br>
+     msg1_sig4 = 20 ,<br>
+     msg1_sig5: 22.200000000000003,<br>
+     msg1_sig6 :10.5,<br>
+     msg1_sig7 = -80.5,<br>
+     msg1_sig8 = 110.0}<br>
+    * */
+    static byte[] data8_ = new byte[]{30, 29, 28, 20, (byte) 211, 121, (byte) 200, 100};
+
+
+    CarDataModel model = new CarDataModel();
     CanObjectMapManager manager = CanObjectMapManager.getInstance();
-    byte[] data8_ = new byte[]{30, 29, 28, 20, (byte) 211, 121, (byte) 200, 100};
-    List<CanData> canDataList;
-    List<CanData> canDataList2;
+    List<CanFrameData> canFrameDataList;
+    List<CanFrameData> canFrameDataList2;
+    long bindTimeCost;
     {
-        manager.registerDBC("testDbc",path1); // 绑定DBC文件
-        manager.registerData(model); // 绑定数据模型
+        manager.addDbcToMap("testDbc",path1); // 绑定DBC文件
 
-        canDataList = new ArrayList<>();
-        CanData canData1 = new CanData(msg1_Id,data8_);
-        CanData canData2 = new CanData(msg2_Id,data8_);
-        CanData canData3 = new CanData(msg3_Id,data8_);
+        long startTime = System.currentTimeMillis();
+        manager.bindDataModelAndField(model); // 绑定数据模型
+        long endTime = System.currentTimeMillis();
+        bindTimeCost = endTime - startTime;
+        //System.out.println("绑定耗时 : " + bindTimeCost+" 毫秒");
 
-        CanData canData4 = new CanData(msg1_Id,data8_);
-        CanData canData5 = new CanData(msg2_Id,data8_);
-        CanData canData6 = new CanData(msg3_Id,data8_);
+        canFrameDataList = new ArrayList<>();
+        CanFrameData canFrameData1 = new CanFrameData(msg1_Id,data8_);
+        CanFrameData canFrameData2 = new CanFrameData(msg2_Id,data8_);
+        CanFrameData canFrameData3 = new CanFrameData(msg3_Id,data8_);
 
-        CanData canData7 = new CanData(msg1_Id,data8_);
-        CanData canData8 = new CanData(msg2_Id,data8_);
-        CanData canData9 = new CanData(msg3_Id,data8_);
+        CanFrameData canFrameData4 = new CanFrameData(msg1_Id,data8_);
+        CanFrameData canFrameData5 = new CanFrameData(msg2_Id,data8_);
+        CanFrameData canFrameData6 = new CanFrameData(msg3_Id,data8_);
 
-        canDataList.add(canData1);
-        canDataList.add(canData2);
-        canDataList.add(canData3);
-        canDataList.add(canData4);
-        canDataList.add(canData5);
-        canDataList.add(canData6);
-        canDataList.add(canData7);
-        canDataList.add(canData8);
-        canDataList.add(canData9);
+        CanFrameData canFrameData7 = new CanFrameData(msg1_Id,data8_);
+        CanFrameData canFrameData8 = new CanFrameData(msg2_Id,data8_);
+        CanFrameData canFrameData9 = new CanFrameData(msg3_Id,data8_);
 
-        canDataList2 = new ArrayList<>();
-        canDataList2.add(canData1);
-        canDataList2.add(canData2);
-        canDataList2.add(canData3);
+        canFrameDataList.add(canFrameData1);
+        canFrameDataList.add(canFrameData2);
+        canFrameDataList.add(canFrameData3);
+        canFrameDataList.add(canFrameData4);
+        canFrameDataList.add(canFrameData5);
+        canFrameDataList.add(canFrameData6);
+        canFrameDataList.add(canFrameData7);
+        canFrameDataList.add(canFrameData8);
+        canFrameDataList.add(canFrameData9);
+
+        canFrameDataList2 = new ArrayList<>();
+        canFrameDataList2.add(canFrameData1);
+        canFrameDataList2.add(canFrameData2);
+        canFrameDataList2.add(canFrameData3);
 
     }
-    //model = Msg1 = {
-    // msg1_sig1 :30,
-    // msg1_sig2 :29,
-    // msg1_sig3 = 28,
-    // msg1_sig4 = 20 ,
-    // msg1_sig5: 22.200000000000003,
-    // msg1_sig6 :10.5,
-    // msg1_sig7 = -80.5,
-    // msg1_sig8 = 110.0}
 
+
+    /**
+     * 测试绑定耗时
+     */
+    @Test
+    public void bindTimeCostTest(){
+        System.out.println("绑定耗时 : " + bindTimeCost+" 毫秒");
+        // 耗时10毫秒左右
+    }
+    /**
+     * 测试绑定耗时
+     */
+    @Test
+    public void bindLoop(){
+
+        long startTime = System.currentTimeMillis();
+        for (int i = 0; i< loopTime ;i++){
+            manager.bindDataModelAndField(model); // 绑定数据模型
+        }
+        long endTime = System.currentTimeMillis();
+        bindTimeCost = endTime - startTime;
+        System.out.println("绑定对象 "+ loopTime +"次， 耗时 : " + bindTimeCost +" 毫秒");
+        // 一万次绑定，稳定在 300 毫秒 。 十万次稳定 800
+    }
     /**
      * 采用了并发流处理报文
      */
     @Test
     public void concurrentTest(){
-        CanIO canIO = manager.getCanIo("testDbc");
+        CanIOHandler canIOHandler = manager.getCanIo("testDbc");
         long startTime = System.currentTimeMillis();
         for (int i = 0 ;i<num ;i++){
             // 以下代码用于测试报文的  接收
-            canIO.concurrentCanToField(msg1_Id,data8_);
+            canIOHandler.concurrentCanToField(msg1_Id,data8_);
             //System.out.println("model = "+ model.getMsg1Value());
         }
         long endTime = System.currentTimeMillis();
@@ -85,15 +121,15 @@ public class CanIOTest {
     }
 
     /**
-     * 采用单线程处理报文,并且不加锁
+     * 采用单线程处理报文,并且不加锁。推荐使用这种方式。
      */
     @Test
     public void singleThreadTest(){
-        CanIO canIO = manager.getCanIo("testDbc");
+        CanIOHandler canIOHandler = manager.getCanIo("testDbc");
         long startTime = System.currentTimeMillis();
         for (int i = 0 ;i<num ;i++){
             // 以下代码用于测试报文的  接收
-            canIO.canToFieldB(msg1_Id,data8_);
+            canIOHandler.canToField_B(msg1_Id,data8_);
             //System.out.println("model = "+ model.getMsg1Value());
         }
         long endTime = System.currentTimeMillis();
@@ -101,14 +137,14 @@ public class CanIOTest {
         System.out.println("不采用并发流,采用单线程处理报文，并且不加锁，运行次数 = " + num + " ,程序运行时间: " + timeCost + " 毫秒");
     }
     /**
-     * 采用单线程处理报文，并且加锁运行。相比于完全的单线程，只慢一点点
+     * 采用单线程处理报文，并且加锁运行。相比于完全的单线程，只慢一点点。同样推荐使用这种方式调用
      */
     @Test
     public void syncTest(){
-        CanIO canIO = manager.getCanIo("testDbc");
+        CanIOHandler canIOHandler = manager.getCanIo("testDbc");
         long startTime = System.currentTimeMillis();
         for (int i = 0 ;i<num ;i++){
-            canIO.syncCanToFieldB(msg1_Id,data8_);
+            canIOHandler.syncCanToField_B(msg1_Id,data8_);
             //System.out.println("model = "+ model.getMsg1Value());
         }
         long endTime = System.currentTimeMillis();
@@ -121,22 +157,22 @@ public class CanIOTest {
      */
     @Test
     public void poolTest(){
-        CanIO canIO = manager.getCanIo("testDbc");
+        CanIOHandler canIOHandler = manager.getCanIo("testDbc");
 
         long startTime = System.currentTimeMillis();
 
         ExecutorService executor = new ThreadPoolExecutor(4,4,3, TimeUnit.SECONDS,new LinkedBlockingDeque<>());
-        // canDataList 中有 9 组报文，其中有 3 种报文id ，假如每个执行1秒，则单线程执行9秒。
+        // canFrameDataList 中有 9 组报文，其中有 3 种报文id ，假如每个执行1秒，则单线程执行9秒。
         // 采用线程池则执行3秒，而不是1秒。因为我给每个ID 都加了锁。
-        for (CanData canData: canDataList){
-            int canId = canData.getMsgId();
-            byte[] data = canData.getData8();
-            ReentrantLock lock = canIO.getLock(canId);
+        for (CanFrameData canFrameData : canFrameDataList){
+            int canId = canFrameData.getMsgId();
+            byte[] data = canFrameData.getBytes8();
+            ReentrantLock lock = canIOHandler.getLock(canId);
             executor.submit(() -> {
                 lock.lock();
                 try {
                     //System.out.println("Task " + MyByte.hex2Str(canId) + " is running on " + Thread.currentThread().getName());
-                    canIO.canToFieldB(canId,data);
+                    canIOHandler.canToField_B(canId,data);
                     Thread.sleep(1000);
                 }catch (Exception e){
                     e.printStackTrace();
@@ -177,7 +213,7 @@ public class CanIOTest {
      */
     @Test
     public void poolTest2() {
-        CanIO canIO = manager.getCanIo("testDbc");
+        CanIOHandler canIOHandler = manager.getCanIo("testDbc");
 
         long startTime = System.currentTimeMillis();
 
@@ -189,9 +225,9 @@ public class CanIOTest {
 
             // 实际生产中，报文的比拟是随机的，而不是固定比例的，故新增测试用例。
             // 100个数据，3种报文，若比拟固定，则耗时33秒，若比拟随机，则时间不确定。核心线程池数量4，实际上只有3个在运行。
-            CanData canData = getRandomData();
-            int canId = canData.getMsgId();
-            byte[] data = canData.getData8();
+            CanFrameData canFrameData = getRandomData();
+            int canId = canFrameData.getMsgId();
+            byte[] data = canFrameData.getBytes8();
             switch (canId){
                 case msg1_Id:
                     count1++;
@@ -204,12 +240,12 @@ public class CanIOTest {
                     break;
             }
 
-            ReentrantLock lock = canIO.getLock(canId);
+            ReentrantLock lock = canIOHandler.getLock(canId);
             executor.submit(() -> {
                 lock.lock();
                 try {
                     //System.out.println("Task " + MyByte.hex2Str(canId) + " is running on " + Thread.currentThread().getName());
-                    canIO.canToFieldB(canId,data);
+                    canIOHandler.canToField_B(canId,data);
                     //Thread.sleep(1000);
                 }catch (Exception e){
                     e.printStackTrace();
@@ -230,28 +266,71 @@ public class CanIOTest {
         // count1 = 41 , count2 = 29 , count3 = 29 故运行时间按照最大的一个来，而不是平均值33秒。
     }
     /**
-     * 采用单线程处理报文,并且不加锁
+     * 采用单线程处理报文,并且不加锁。 <br>
+     * 如果不涉及 ViewModel , 推荐使用这种方式进行调用，速度最快。<br>
      */
     @Test
     public void singleThreadTest2(){
-        CanIO canIO = manager.getCanIo("testDbc");
+        CanIOHandler canIOHandler = manager.getCanIo("testDbc");
 
         long startTime = System.currentTimeMillis();
         for (int i = 0 ; i < num ; i++){
-            CanData canData = getRandomData();
-            int canId = canData.getMsgId();
-            byte[] data = canData.getData8();
-            canIO.canToFieldB(canId,data);
+            CanFrameData canFrameData = getRandomData();
+            int canId = canFrameData.getMsgId();
+            byte[] data = canFrameData.getBytes8();
+            canIOHandler.canToField_B(canId,data);
             //System.out.println("model = "+ model.getMsg1Value());
         }
         long endTime = System.currentTimeMillis();
         long timeCost = endTime - startTime;
         System.out.println("不采用并发流,采用单线程处理报文，并且不加锁，使用随机数据,运行次数 = " + num + " ,程序运行时间: " + timeCost + " 毫秒");
     }
-    public CanData getRandomData(){
+    public CanFrameData getRandomData(){
         // 在3种报文中，挑一个，生成一个随机数据。
-        int randomIndex = new Random().nextInt(canDataList2.size());  //范围在 [0, list.size()) 的随机整数。
-        return canDataList2.get(randomIndex);
+        int randomIndex = new Random().nextInt(canFrameDataList2.size());  //范围在 [0, list.size()) 的随机整数。
+        return canFrameDataList2.get(randomIndex);
+    }
+
+    /**
+     * 测试报文的编码.(反向操作)
+     */
+    @Test
+    public void fieldToCanITest() {
+        CanIOHandler canIOHandler = manager.getCanIo("testDbc");
+
+
+
+        // 使用数据，产生一个初始值
+        canIOHandler.canToField_B(msg1_Id,data8_);
+        System.out.println("初始数据 model = "+ model.getMsg1Value());
+        /* 初始数据：
+         model = Msg1 = { <br>
+         msg1_sig1 :30,<br>
+         msg1_sig2 :29,<br>
+         msg1_sig3 = 28,<br>
+         msg1_sig4 = 20 ,<br>
+         msg1_sig5: 22.200000000000003,<br>
+         msg1_sig6 :10.5,<br>
+         msg1_sig7 = -80.5,<br>
+         msg1_sig8 = 110.0}<br>
+         * */
+
+        long startTime = System.currentTimeMillis();
+        //num = 1 ;
+        for (int i = 0 ; i < num  ; i++) { // num
+            // 模拟在子线程中，手动修改了模型的值。
+            model.updateValue();
+
+            // 现需要根据新的模型值，产生一个新的报文。
+            int[] canFrame = canIOHandler.fieldToCan_I(msg1_Id);
+
+            // 产生报文 = [11, 12, 13, 14, 217, 121, 194, 110] 正确
+            // System.out.println("产生报文 = "+ Arrays.toString(canFrame));
+        }
+
+        long endTime = System.currentTimeMillis();
+        long timeCost = endTime - startTime;
+        System.out.println("采用单线程处理报文，并且不加锁，运行次数 = " + num + " ,程序运行时间: " + timeCost + " 毫秒");
     }
 
 }

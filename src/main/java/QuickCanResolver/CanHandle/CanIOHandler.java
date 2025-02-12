@@ -1,41 +1,61 @@
 package QuickCanResolver.CanHandle;
 
-import QuickCanResolver.CanDataEnum.CANByteOrder;
+import QuickCanResolver.DBC.CanDataEnum.CANByteOrder;
 import QuickCanResolver.CanTool.MyByte;
+import QuickCanResolver.DBC.CanSignal;
 import QuickCanResolver.DBC.CanDbc;
 import QuickCanResolver.DBC.CanMessage;
-import QuickCanResolver.DBC.CanSignal;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * CAN收发器。<br>用于处理报文的收发,构造器传入一个DBC对象，本类就负责针对报文对该DBC进行修改。
+ * CAN收发器。<br>用于处理报文的收发,构造器传入一个DBC对象，本类就负责针对报文对该DBC进行修改。<br>
+ * 低耦合：此类只对 CanDbc 负责，不对其他类负责。由dbc类中的数据，解析报文，或者编码报文。
  */
-public class CanIO {
-    protected CanDbc dbc;
-    Map<Integer, CanMessage> msgMap;
-    Map<Integer,ReentrantLock> msgWriteLockMap ;
-    //ReentrantLock lock_ = new ReentrantLock();
-    public CanIO(CanDbc dbc) {
+public class CanIOHandler {
+    /** 持有一个 dbc 的 mspMap 。 用于执行报文的收发操作。*/
+    protected final Map<Integer, CanMessage> msgMap;
+    protected final CanDbc dbc ;
+    public final String dbcTag ;
+    /** 定义锁的map，用于在写入字段的时候同步，确保相同的报文，同一时间只有一个线程在写入字段。
+     * 而不同报文，则用不同的锁来保证同步。不同报文因为是不同的数据，故可以多线程同时操作。
+     * */
+    protected Map<Integer,ReentrantLock> msgWriteLockMap ;
+    public CanIOHandler(CanDbc dbc){
         // 传入一个DBC对象，用于后续修改
-        this.dbc = dbc ;
+        this.dbc = dbc;
+        this.dbcTag = dbc.dbcTag;
         msgMap = dbc.getIntMsgMap();
         msgWriteLockMap = new ConcurrentHashMap<>();
+    }
+
+    /**
+     * 根据新的报文 ， 刷新数据模型的字段值
+     */
+    public void update_B(int canId, byte[] data8) {
+        CanMessage msg = msgMap.get(canId);
+        if (msg == null){
+            return;
+        }
+        byte[] data64 = MyByte.from8BytesTo64Bits(data8,MyByte.DataType.Intel); // 8 -->64
+        // 64 --> signal ;
+        for (CanSignal signal : msg.getSignalMap().values()) {
+            // 这里和之前不一样的地方在于，传入了 dbc中绑定的数据模型。所以只需要确定是哪一个dbc 即可。
+            bits64ToField(data64, signal, signal.getStartBit(), signal.getBitLength(), signal.getFactor(), signal.getOffset(),dbc.getDataModel());
+        }
     }
     /**
      * 将接收到的CAN报文，解析后存入绑定好的数据模型中。<br>
      * 8 --> 64 --> signal --> field
      * @param canId 报文id
-     * @param data8 8位数组的CAN报文
+     * @param data8 8位数组的CAN报文,Byte数组格式。
+     * @deprecated 随时准备弃用该方法。因为该方法在每一个CAN信号都维护了一个数据模型的引用，内存占用增加。
      */
-    public void canToFieldB(int canId, byte[] data8) {
+    @Deprecated
+    public void canToField_B(int canId, byte[] data8) {
         // 拿到id之后，需要到DBC文件中查询对应的对象。然后修改这个对象
         CanMessage msg = msgMap.get(canId);
         if (msg == null){
@@ -43,36 +63,36 @@ public class CanIO {
         }
         byte[] data64 = MyByte.from8BytesTo64Bits(data8,MyByte.DataType.Intel); // 8 -->64
         // 64 --> signal ;循环，逐个将 64bits数组中的数据按位取出，并解析到信号的字段中。
-        for (CanSignal mSig : msg.getSignalMap().values()) {
-            bits64ToSig(data64, mSig);
+        for (CanSignal signal : msg.getSignalMap().values()) {
+            bits64ToField(data64, signal, signal.getStartBit(), signal.getBitLength(), signal.getFactor(), signal.getOffset());
         }
     }
+
     /**
      * 将数据模型的字段，解析后得到一个CAN报文数组。<br>
      * field --> 64 --> 8
      * @param canId 报文id
-     * @return 8位数组的CAN报文
+     * @return 8位数组的CAN报文。int数组格式。
      */
-    public int[] fieldToCanI(int canId) {
+    public int[] fieldToCan_I(int canId) {
         CanMessage sendMsg = msgMap.get(canId);
         if (sendMsg == null){
             return new int[8]; // 传一个全是0的回去
         }
         byte[] data64 = new byte[64];
         // field --> 64 ; 循环，逐个将信号的值解析出来，并加载到数组对应的位中。
-        for (CanSignal mSig : sendMsg.getSignalMap().values()){
-            sigToBits64(data64,mSig.getFieldValue() , mSig.getStartBit(), mSig.getBitLength(), mSig.getFactor() , mSig.getOffset() ,mSig.getByteOrder());
+        for (CanSignal signal : sendMsg.getSignalMap().values()) {
+            sigToBits64(data64,signal.readValue() , signal.getStartBit(), signal.getBitLength(), signal.getFactor() , signal.getOffset() ,signal.getByteOrder());
         }
         return MyByte.from64bitsTo8BytesI(data64, MyByte.DataType.Intel); // 64 --> 8
     }
-
 
     /**
      * 在写入字段的时候，加锁写入。
      * @param canId 报文id
      * @param data8 8位数组的CAN报文
      */
-    public void syncCanToFieldB(int canId, byte[] data8) {
+    public void syncCanToField_B(int canId, byte[] data8) {
         // 拿到id之后，需要到DBC文件中查询对应的对象。然后修改这个对象
         CanMessage msg = msgMap.get(canId);
         if (msg == null) {
@@ -84,8 +104,8 @@ public class CanIO {
         ReentrantLock lock = getLock(canId);
         lock.lock();
         try {
-            for (CanSignal mSig : msg.getSignalMap().values()) {
-                bits64ToSig(data64, mSig);
+            for (CanSignal signal : msg.getSignalMap().values()) {
+                bits64ToField(data64, signal, signal.getStartBit(), signal.getBitLength(), signal.getFactor(), signal.getOffset());
             }
         } finally {
             lock.unlock();
@@ -104,15 +124,6 @@ public class CanIO {
         return lock;
     }
 
-
-
-    /**
-     * 64 --> signal
-     */
-    private void bits64ToSig(byte[] data64, CanSignal mSig) {
-        write64ToField(mSig,data64, mSig.getStartBit(), mSig.getBitLength(), mSig.getFactor(), mSig.getOffset());
-    }
-
     /**
      * 64 --> signal <br>
      * 根据报文，计算数据的实际值。phyValue = (rawValue * factor) + offset 。<br>
@@ -125,27 +136,50 @@ public class CanIO {
      * TODO  此函数存在非常大的问题需要适配，根据精度偏移量计算实际值，有可能返回 int 或是 Double 类型的数据，
      *       还有可能返回 null （只有用Double接收的时候会返回null），即0xFF时需要做提醒。适配起来太麻烦了，我疲倦了。
      */
-    protected void write64ToField(CanSignal sig, byte[] data64, int startBit , int bitLength , double factor , double offset ) {
+    protected void bits64ToField(byte[] data64, CanSignal signal, int startBit , int bitLength , double factor , double offset ) {
         //System.out.println("待计算值，startBit = " + startBit +" ;  bitLength = "+bitLength+" ;  factor = " + factor + " ; offset = " + offset) ;
         int rawValue ; //总线值，未处理值
         double phyValue; //实际值
-        MyByte.DataType inputType = transOrder(sig.getByteOrder());
+        MyByte.DataType inputType = transOrder(signal.getByteOrder());
         rawValue = MyByte.bitsToInt(Arrays.copyOfRange(data64,startBit,startBit + bitLength),inputType) ; // MyByte.DataType.Intel
         phyValue = (rawValue * factor) + offset ; //不包括8
-        sig.setFieldValue(phyValue) ; // 设置字段值（未处理线程同步的问题）
+        /* 设置字段值（未处理线程同步的问题）*/
+        signal.writeValue(phyValue) ;
         //System.out.println("计算后 ，rawValue="+rawValue+" , phyValue="+phyValue);
         //如果准备输出 double 类型数据，首先判断 总线值不可以是 0xFF 。
         if ((!isInteger(factor)||!isInteger(offset)||! isInteger(phyValue))) { //判断是否是小数，是则下一步
             //新增代码，加入无效值判断
             if ( checkAllOnes(rawValue,bitLength) ){ // 全为1，则是0xFF，则无效化处理。
-                sig.setValid(false); //设置无效值
+                signal.setValid(false); //设置无效值
             }
             else {
-                sig.setValid(true);
+                signal.setValid(true);
             }
         }
         //另外，如果是整型的数据，仍然有可能输出0xFF表示无效。但是不能直接将0XFF视为无效值，因为有的是枚举变量。所以啊，统一协议，任重而道远啊。一旦统一了所有信号全1为无效，代码就方便多了。
-    } // write64ToField()
+    } // bits64ToField()
+    protected void bits64ToField(byte[] data64, CanSignal signal, int startBit , int bitLength , double factor , double offset ,Object newModel) {
+        //System.out.println("待计算值，startBit = " + startBit +" ;  bitLength = "+bitLength+" ;  factor = " + factor + " ; offset = " + offset) ;
+        int rawValue ; //总线值，未处理值
+        double phyValue; //实际值
+        MyByte.DataType inputType = transOrder(signal.getByteOrder());
+        rawValue = MyByte.bitsToInt(Arrays.copyOfRange(data64,startBit,startBit + bitLength),inputType) ; // MyByte.DataType.Intel
+        phyValue = (rawValue * factor) + offset ; //不包括8
+        /* 设置字段值（未处理线程同步的问题）*/
+        signal.setFieldValue(phyValue,newModel) ;
+        //System.out.println("计算后 ，rawValue="+rawValue+" , phyValue="+phyValue);
+        //如果准备输出 double 类型数据，首先判断 总线值不可以是 0xFF 。
+        if ((!isInteger(factor)||!isInteger(offset)||! isInteger(phyValue))) { //判断是否是小数，是则下一步
+            //新增代码，加入无效值判断
+            if ( checkAllOnes(rawValue,bitLength) ){ // 全为1，则是0xFF，则无效化处理。
+                signal.setValid(false); //设置无效值
+            }
+            else {
+                signal.setValid(true);
+            }
+        }
+        //另外，如果是整型的数据，仍然有可能输出0xFF表示无效。但是不能直接将0XFF视为无效值，因为有的是枚举变量。所以啊，统一协议，任重而道远啊。一旦统一了所有信号全1为无效，代码就方便多了。
+    } // bits64ToField()
 
     /* 一些共用方法 */
     /**
@@ -180,7 +214,6 @@ public class CanIO {
      * @param bitLength 数据长度
      */
     public void sigToBits64(byte[] sendCanData, int instanceValue, int startBit , int bitLength, CANByteOrder instanceByteOrder ) {
-        // 实例变量 instanceValue 可能为int,也可能为double , 根据精度和偏移量计算总线值 instanceValue = (rawValue * factor) + offset
         MyByte.DataType inputType = transOrder(instanceByteOrder);
         byte[] src = MyByte.intToBits(instanceValue,inputType,bitLength)  ;  //将总线值变成 0或者1 的数组
         System.arraycopy( src ,0, sendCanData , startBit , bitLength  );  //将数组赋值到目标 8*8 = 64 bits 的矩阵中
@@ -202,7 +235,7 @@ public class CanIO {
         System.arraycopy( src ,0, bits64, startBit , bitLength  );  //将数组 复制 到目标 8*8 = 64 bits 的矩阵中
     }
     /** 转换不同的英特尔格式 */
-    public static MyByte.DataType transOrder(CANByteOrder instanceByteOrder){
+    public static MyByte.DataType transOrder(CANByteOrder instanceByteOrder) {
         MyByte.DataType inputType ;
         if (instanceByteOrder == CANByteOrder.Intel){
             inputType = MyByte.DataType.Intel;
@@ -213,9 +246,9 @@ public class CanIO {
         return inputType;
     }
 
-    /* 以下代码均被弃用。因为每次解析报文实际上是CPU密集型任务。并且每次的计算量很小，只有64bit的计算量。
-    * 同时，由于任务大小很小，开启线程可能不会带来明显性能提升，反而可能因线程切换增加开销。
-    * 同时，因为任务次数很多，故可以在最外部使用线程池来开启线程，使每个任务的大小变得更合适一些。
+    /* 以下函数 均被弃用。因为每次解析报文实际上是CPU密集型任务,并且每次的计算量很小，只有64bit的计算量。
+    * 同时，由于任务大小很小，开启线程不会带来明显性能提升，反而可能因线程切换增加开销。
+    * 同时，因为任务次数很多，线程会频繁的切换，导致性能下降。
     *
     * 经过测试：采用了并发流来处理报文时，一千帧报文，平均耗时200毫秒。而采用单线程，一千帧，不采用并发流的平均耗时是10毫秒。
     * 可见，过早的优化确实是罪恶之源。当线程切分得太小时，反而不适合使用多线程进行处理；采用单线程反而可以提高效率。
@@ -250,7 +283,10 @@ public class CanIO {
         }
         //System.out.println("正在解析接收报文，解析报文 ID = " + MyByte.hex2Str(canId));
         // 遍历消息，取出数组值,并修改所有的消息值 。可用线程池或者并行流优化。可以考虑使用并行流（parallelStream()）来简化代码。并行流会自动处理并发执行，并且代码会更加简洁。
-        msg.getSignalMap().values().parallelStream().forEach(sig -> bits64ToSig(data64, sig)); // 64 --> signal
+        msg.getSignalMap().values().parallelStream().forEach(
+                signal ->
+                        bits64ToField(data64, signal, signal.getStartBit(), signal.getBitLength(), signal.getFactor(), signal.getOffset())
+        ); // 64 --> signal
     }
     /* 以下是发送函数 */
     /**
@@ -282,7 +318,7 @@ public class CanIO {
         }
         /* 将对象中的数据转换至数组中。使用流式操作优化代码,并发的方式提高程序效率。多线程修改 sendCanData，可能会出现线程安全问题。但由于修改的是数组 sendCanData 的不同下标，理论上不会出现问题。 */
         sendMsg.getSignalMap().values().parallelStream().forEach(sig ->
-                sigToBits64(sendCanData,sig.getFieldValue() , sig.getStartBit(), sig.getBitLength(), sig.getFactor() , sig.getOffset() ,sig.getByteOrder())   );
+                sigToBits64(sendCanData,sig.readValue() , sig.getStartBit(), sig.getBitLength(), sig.getFactor() , sig.getOffset() ,sig.getByteOrder())   );
         return sendCanData;
     }
 }

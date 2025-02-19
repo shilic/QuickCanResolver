@@ -32,21 +32,21 @@ public class CanIOHandler {
         msgWriteLockMap = new ConcurrentHashMap<>();
     }
 
-    /**
-     * 根据新的报文 ， 刷新数据模型的字段值
-     */
-    public void update_B(int canId, byte[] data8) {
-        CanMessage msg = msgMap.get(canId);
-        if (msg == null){
-            return;
-        }
-        byte[] data64 = MyByte.from8BytesTo64Bits(data8,MyByte.DataType.Intel); // 8 -->64
-        // 64 --> signal ;
-        for (CanSignal signal : msg.getSignalMap().values()) {
-            // 这里和之前不一样的地方在于，传入了 dbc中绑定的数据模型。所以只需要确定是哪一个dbc 即可。
-            bits64ToField(data64, signal, signal.getStartBit(), signal.getBitLength(), signal.getFactor(), signal.getOffset(),dbc.getDataModel());
-        }
-    }
+//    /**
+//     * 根据新的报文 ， 刷新数据模型的字段值
+//     */
+//    public void update_B(int canId, byte[] data8) {
+//        CanMessage msg = msgMap.get(canId);
+//        if (msg == null){
+//            return;
+//        }
+//        byte[] data64 = MyByte.from8BytesTo64Bits(data8,MyByte.DataType.Intel); // 8 -->64
+//        // 64 --> signal ;
+//        for (CanSignal signal : msg.getSignalMap().values()) {
+//            // 这里和之前不一样的地方在于，传入了 dbc中绑定的数据模型。所以只需要确定是哪一个dbc 即可。
+//            bits64ToField(data64, signal, signal.getStartBit(), signal.getBitLength(), signal.getFactor(), signal.getOffset(),dbc.getDataModel());
+//        }
+//    }
     /**
      * 将接收到的CAN报文，解析后存入绑定好的数据模型中。<br>
      * 8 --> 64 --> signal --> field

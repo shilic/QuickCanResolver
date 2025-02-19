@@ -61,7 +61,7 @@ public class CanSignal {
     /** 接收节点列表 默认值 Vector__XXX*/
     protected final Set<String> sigReceiveNodeSet ;
     /** 用于标记该信号属于哪个数据模型 */
-    protected Object dataModel;
+    protected  Object dataModel;
     /** 用于标记属于哪个字段 。如果 */
     protected Field field ;
 
@@ -92,7 +92,7 @@ public class CanSignal {
         if (! isFieldBind()) { // 如果这个信号没有绑定字段，则不写入值
             return false;
         }
-        SignalIOService.setFieldValue(field, dataModel, sigValue);
+        SignalIOService.setFieldValue(field, dataModel, sigValue); // 使用反射，给字段赋值
         return true;
     }
     public boolean setFieldValue(double sigValue,Object newModel) {
@@ -107,7 +107,7 @@ public class CanSignal {
         if (! isFieldBind()) { // 如果这个信号没有绑定字段
             return 0;
         }
-        return SignalIOService.getFieldValue(field, dataModel);
+        return SignalIOService.getFieldValue(field, dataModel); // 获取绑定的字段中当前的旧值
     }
 
 
@@ -161,7 +161,7 @@ public class CanSignal {
     }
 
     public void setDataModel(Object dataModel) {
-        this.dataModel = dataModel;
+        this.dataModel = dataModel; // set
     }
     public void setField(Field field) {
         this.field = field;
@@ -172,9 +172,9 @@ public class CanSignal {
     public String getSignalComment() {
         return signalComment;
     }
-    @Deprecated
+
     public Object getDataModel() {
-        return dataModel;
+        return dataModel; // get
     }
     @Deprecated
     public Field getField() {

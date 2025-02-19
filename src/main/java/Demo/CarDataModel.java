@@ -8,8 +8,12 @@ import QuickCanResolver.CanHandle.DbcBinding;
  * 定义一个数据模型类，仅用于测试，除了最基本的数据模型外，不进行额外操作。
  *
  */
-@DbcBinding(dbcTag = "testDbc", dbcPath = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\Example.dbc")
-public class CarDataModel implements CanCopyable<CarDataModel> , Cloneable{
+//@DbcBinding(dbcTag = "testDbc", dbcPath = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\Example.dbc")
+    // 嵌套注解，实现更为复杂的数据的注解，现在可以传入多个DBC给一个数据模型了
+@DbcBinding({
+    @DbcBinding.Dbc(dbcTag = "testDbc",dbcPath = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\Example.dbc")
+})
+public class CarDataModel implements CanCopyable<CarDataModel> , Cloneable {
     @CanBinding(signalTag = "CabinToCCS1_FactoryID")
     int CabinToCCS1_FactoryID ;
     // 属性的名称可以不和dbc中的信号名称一致，名称定义取决于你。但，注解中标注的信号名称需要和DBC文件中定义的一致。

@@ -11,12 +11,23 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface DbcBinding {
-    /**
-     * dbc标签名
-     */
-    String dbcTag() ;
-    /**
-     * dbc文件路径
-     * */
-    String dbcPath() ;
+//    /**
+//     * dbc标签名
+//     */
+//    String dbcTag() ;
+//    /**
+//     * dbc文件路径
+//     * */
+//    String dbcPath() ;
+    Dbc[] value();
+    @interface Dbc{
+        /**
+         * dbc标签名
+         */
+        String dbcTag() ;
+        /**
+         * dbc文件路径
+         * */
+        String dbcPath() ;
+    }
 }

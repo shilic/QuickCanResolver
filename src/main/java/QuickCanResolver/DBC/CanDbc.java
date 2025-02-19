@@ -14,19 +14,19 @@ public class CanDbc {
     /** 消息列表 。键记录消息ID值，值记录消息的对象 LinkedHashMap ，记录的是 newMsgIDCode，注意*/
     protected final Map<Integer, CanMessage> intMsgMap;
     public final String dbcTag ;
-    /** 用于判断是否 绑定 数据模型 （整体上） */
-    protected boolean modelBind = false ;
-    protected Object dataModel ;
 
 
-    public void bindModel(Object dataModel) {
-        this.dataModel = dataModel;
-        this.modelBind = true ;
-    }
-    public void clearModel() {
-        modelBind = false ;
-        dataModel = null ;
-    }
+    //protected Object dataModel ;
+
+
+//    public void bindModel(Object dataModel) {
+//        this.dataModel = dataModel;
+//        this.modelBind = true ;
+//    }
+//    public void clearModel() {
+//        modelBind = false ;
+//        dataModel = null ;
+//    }
     /**
      * 根据Map插入顺序获取 DBC Message对象。实际用于在添加信号sig时，获取刚插入的消息msg。并将sig添加到msg中。
      * @param index 你想要获取的索引值
@@ -62,6 +62,7 @@ public class CanDbc {
 
     /**
      * 根据信号名称，获取一个信号。<br>
+     * 这里如果在map中没有查询到，仍然有可能返回一个null
      * @param signalTag 信号标签
      * @return 返回一个信号
      */
@@ -79,7 +80,8 @@ public class CanDbc {
     }
 
     /**
-     * 根据信号名称和报文id，获取一个信号。
+     * 根据信号名称和报文id，获取一个信号。<br>
+     * 这里如果在map中没有查询到，仍然有可能返回一个null
      * @param signalTag 信号标签
      * @param messageTag 报文id
      * @return 返回一个信号。
@@ -144,7 +146,7 @@ public class CanDbc {
         return intMsgMap;
     }
 
-    public Object getDataModel() {
-        return dataModel;
-    }
+//    public Object getDataModel() {
+//        return dataModel;
+//    }
 }  ///class CANChannels

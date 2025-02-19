@@ -43,6 +43,8 @@ public class CanMessage {  //编程第一步，定义数据结构
     /** 信号列表 ; 键指信号的名称, 值指的是信号 */
     protected final Map<String, CanSignal> signalMap = new ConcurrentHashMap<>();
 
+
+
     public int getMsg_ID() {
         return msg_ID;
     }

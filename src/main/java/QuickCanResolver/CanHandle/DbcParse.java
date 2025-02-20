@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 /**
  * 用于处理将DBC文件解析为DBC对象，也就是反向操作。注意，暂时不支持报文分组，parseSG函数中，已经被我删去相关代码。
  */
-public class DbcHandle {
+public class DbcParse {
     static final String Vector__XXX = "Vector__XXX";
     static String regex = "SG_\\s*(?<sigName>\\b[a-zA-Z_]\\w*)\\s*(?<group>[mM]\\d*)?\\s*:" +
             "\\s*(?<startBit>\\d+)\\s*[|]\\s*(?<bitLength>\\d+)@(?<ByteOrder>[10])(?<DataType>[+-])"+
@@ -255,7 +255,7 @@ public class DbcHandle {
         }
         return nodeSet;
     }
-    protected DbcHandle(){
+    protected DbcParse(){
 
     }
 }

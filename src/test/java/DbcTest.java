@@ -1,5 +1,5 @@
 import QuickCanResolver.CanHandle.CanIOHandler;
-import QuickCanResolver.CanHandle.DbcHandle;
+import QuickCanResolver.CanHandle.DbcParse;
 import QuickCanResolver.DBC.CanDbc;
 import QuickCanResolver.DBC.CanSignal;
 import org.junit.Test;
@@ -17,7 +17,7 @@ public class DbcTest {
         String path1 = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\大屏协议（测试版2）GBK编码.dbc";
         CanDbc dbc = null;
         try {
-            dbc = DbcHandle.getDbcFromFile("testDbc",path1);
+            dbc = DbcParse.getDbcFromFile("testDbc",path1);
         } catch (Exception exception) {
             exception.printStackTrace();
         }
@@ -49,7 +49,7 @@ public class DbcTest {
         String path1 = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\大屏协议（测试版2）GBK编码.dbc";
         CanDbc dbc = null;
         try {
-            dbc = DbcHandle.getDbcFromFile("testDbc",path1);
+            dbc = DbcParse.getDbcFromFile("testDbc",path1);
         } catch (Exception exception) {
             exception.printStackTrace();
         }

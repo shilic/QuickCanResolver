@@ -109,6 +109,11 @@ public class CanSignal {
         }
         return SignalIOService.getFieldValue(field, dataModel); // 获取绑定的字段中当前的旧值
     }
+    public boolean checkModelType(Object newObj) {
+        Class<?> currentClazz = dataModel.getClass();
+        Class<?> newClazz = newObj.getClass();
+        return currentClazz.equals(newClazz);
+    }
 
 
 

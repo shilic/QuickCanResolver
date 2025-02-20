@@ -32,30 +32,42 @@ public class CanIOHandler {
         msgWriteLockMap = new ConcurrentHashMap<>();
     }
 
-//    /**
-//     * 根据新的报文 ， 刷新数据模型的字段值
-//     */
-//    public void update_B(int canId, byte[] data8) {
-//        CanMessage msg = msgMap.get(canId);
-//        if (msg == null){
-//            return;
-//        }
-//        byte[] data64 = MyByte.from8BytesTo64Bits(data8,MyByte.DataType.Intel); // 8 -->64
-//        // 64 --> signal ;
-//        for (CanSignal signal : msg.getSignalMap().values()) {
-//            // 这里和之前不一样的地方在于，传入了 dbc中绑定的数据模型。所以只需要确定是哪一个dbc 即可。
-//            bits64ToField(data64, signal, signal.getStartBit(), signal.getBitLength(), signal.getFactor(), signal.getOffset(),dbc.getDataModel());
-//        }
-//    }
+    /**
+     * 根据新的报文 ， 刷新数据模型的字段值<br>
+     * 8 --> 64 --> signal --> newModel
+     * @param canId canId
+     * @param data8 8字节的数组数据
+     * @param newModel 需要刷新的字段
+     */
+    public void updateObj_B(int canId, byte[] data8,Object newModel) {
+        CanMessage msg = msgMap.get(canId);
+        if (msg == null){
+            return;
+        }
+        // 8 -->64
+        byte[] data64 = MyByte.from8BytesTo64Bits(data8,MyByte.DataType.Intel);
+        // 64 --> signal ;
+        for (CanSignal signal : msg.getSignalMap().values()) {
+            // 获取值之后，调用方法将数据写入到一个新的模型中，实现数据的刷新。
+            double phyValue = bits64ToValue(data64, signal, signal.getStartBit(), signal.getBitLength(), signal.getFactor(), signal.getOffset());
+            // TODO  注意，此方法存在问题，通过id确定信号后，再刷新数据到模型中，字段是和 signal 绑定了，但是新的模型的绑定关系是不确定的。
+            //     * 模型中是否存在这个字段，需要验证。我在考虑要不要校验，因为校验会增加程序的运行时间。不正确的话或者干脆在写入的时候报错就好了。
+//            if (! signal.checkModelType(newModel)) {
+//                continue; // 校验，如果模型不正确就不写入
+//            }
+            signal.setFieldValue(phyValue,newModel) ;
+            /*提示（勿删）：实际上在运用过程中，确实有可能出现，一帧报文绑定多个模型的情况出现，这个时候，这个函数就不适用了，因为这个函数的作用就是用于输出单个数据模型。
+            * 况且在实际应用中，最好是细分DBC和数据模型，确保一个 canId 只输出一个模型，这样在运用到 LiveData 时，也会更方便。你也不想，多输入多输出吧，参数可变就太麻烦了。
+            *  */
+        }
+    }
     /**
      * 将接收到的CAN报文，解析后存入绑定好的数据模型中。<br>
      * 8 --> 64 --> signal --> field
      * @param canId 报文id
      * @param data8 8位数组的CAN报文,Byte数组格式。
-     * @deprecated 随时准备弃用该方法。因为该方法在每一个CAN信号都维护了一个数据模型的引用，内存占用增加。
      */
-    @Deprecated
-    public void canToField_B(int canId, byte[] data8) {
+    public void receive_B(int canId, byte[] data8) {
         // 拿到id之后，需要到DBC文件中查询对应的对象。然后修改这个对象
         CanMessage msg = msgMap.get(canId);
         if (msg == null){
@@ -64,7 +76,10 @@ public class CanIOHandler {
         byte[] data64 = MyByte.from8BytesTo64Bits(data8,MyByte.DataType.Intel); // 8 -->64
         // 64 --> signal ;循环，逐个将 64bits数组中的数据按位取出，并解析到信号的字段中。
         for (CanSignal signal : msg.getSignalMap().values()) {
-            bits64ToField(data64, signal, signal.getStartBit(), signal.getBitLength(), signal.getFactor(), signal.getOffset());
+            // 解析值
+            double phyValue = bits64ToValue(data64, signal, signal.getStartBit(), signal.getBitLength(), signal.getFactor(), signal.getOffset());
+            // 刷新值
+            signal.writeValue(phyValue) ;
         }
     }
 
@@ -74,7 +89,7 @@ public class CanIOHandler {
      * @param canId 报文id
      * @return 8位数组的CAN报文。int数组格式。
      */
-    public int[] fieldToCan_I(int canId) {
+    public int[] outCanFrame_I(int canId) {
         CanMessage sendMsg = msgMap.get(canId);
         if (sendMsg == null){
             return new int[8]; // 传一个全是0的回去
@@ -92,20 +107,21 @@ public class CanIOHandler {
      * @param canId 报文id
      * @param data8 8位数组的CAN报文
      */
-    public void syncCanToField_B(int canId, byte[] data8) {
+    public void syncReceive_B(int canId, byte[] data8) {
         // 拿到id之后，需要到DBC文件中查询对应的对象。然后修改这个对象
         CanMessage msg = msgMap.get(canId);
         if (msg == null) {
             return;
         }
-        byte[] data64= MyByte.from8BytesTo64Bits(data8,MyByte.DataType.Intel); // 8 --> 64
+        byte[] data64 = MyByte.from8BytesTo64Bits(data8,MyByte.DataType.Intel); // 8 --> 64
         // 64 --> signal ;循环，逐个将 64bits数组中的数据按位取出，并解析到信号的字段中。
 
         ReentrantLock lock = getLock(canId);
         lock.lock();
         try {
             for (CanSignal signal : msg.getSignalMap().values()) {
-                bits64ToField(data64, signal, signal.getStartBit(), signal.getBitLength(), signal.getFactor(), signal.getOffset());
+                double phyValue = bits64ToValue(data64, signal, signal.getStartBit(), signal.getBitLength(), signal.getFactor(), signal.getOffset());
+                signal.writeValue(phyValue) ;
             }
         } finally {
             lock.unlock();
@@ -115,7 +131,7 @@ public class CanIOHandler {
     /**
      * 获取一个锁，该锁锁住了单个报文的操作，不同报文则是不同的锁。
      */
-    public ReentrantLock getLock(int canId){
+    public ReentrantLock getLock(int canId) {
         ReentrantLock lock = msgWriteLockMap.get(canId);
         if (lock == null) {
             lock = new ReentrantLock();
@@ -125,7 +141,7 @@ public class CanIOHandler {
     }
 
     /**
-     * 64 --> signal <br>
+     * 64 --> signal --> field <br>
      * 根据报文，计算数据的实际值。phyValue = (rawValue * factor) + offset 。<br>
      * 如果精度和偏移量有小数，那么会额外执行空值判断<br>
      * @param data64 接收到的 64 bits数组 CAN 数据
@@ -136,15 +152,13 @@ public class CanIOHandler {
      * TODO  此函数存在非常大的问题需要适配，根据精度偏移量计算实际值，有可能返回 int 或是 Double 类型的数据，
      *       还有可能返回 null （只有用Double接收的时候会返回null），即0xFF时需要做提醒。适配起来太麻烦了，我疲倦了。
      */
-    protected void bits64ToField(byte[] data64, CanSignal signal, int startBit , int bitLength , double factor , double offset ) {
+    private double bits64ToValue(byte[] data64, CanSignal signal, int startBit , int bitLength , double factor , double offset ) {
         //System.out.println("待计算值，startBit = " + startBit +" ;  bitLength = "+bitLength+" ;  factor = " + factor + " ; offset = " + offset) ;
         int rawValue ; //总线值，未处理值
         double phyValue; //实际值
         MyByte.DataType inputType = transOrder(signal.getByteOrder());
         rawValue = MyByte.bitsToInt(Arrays.copyOfRange(data64,startBit,startBit + bitLength),inputType) ; // MyByte.DataType.Intel
         phyValue = (rawValue * factor) + offset ; //不包括8
-        /* 设置字段值（未处理线程同步的问题）*/
-        signal.writeValue(phyValue) ;
         //System.out.println("计算后 ，rawValue="+rawValue+" , phyValue="+phyValue);
         //如果准备输出 double 类型数据，首先判断 总线值不可以是 0xFF 。
         if ((!isInteger(factor)||!isInteger(offset)||! isInteger(phyValue))) { //判断是否是小数，是则下一步
@@ -157,29 +171,8 @@ public class CanIOHandler {
             }
         }
         //另外，如果是整型的数据，仍然有可能输出0xFF表示无效。但是不能直接将0XFF视为无效值，因为有的是枚举变量。所以啊，统一协议，任重而道远啊。一旦统一了所有信号全1为无效，代码就方便多了。
-    } // bits64ToField()
-    protected void bits64ToField(byte[] data64, CanSignal signal, int startBit , int bitLength , double factor , double offset ,Object newModel) {
-        //System.out.println("待计算值，startBit = " + startBit +" ;  bitLength = "+bitLength+" ;  factor = " + factor + " ; offset = " + offset) ;
-        int rawValue ; //总线值，未处理值
-        double phyValue; //实际值
-        MyByte.DataType inputType = transOrder(signal.getByteOrder());
-        rawValue = MyByte.bitsToInt(Arrays.copyOfRange(data64,startBit,startBit + bitLength),inputType) ; // MyByte.DataType.Intel
-        phyValue = (rawValue * factor) + offset ; //不包括8
-        /* 设置字段值（未处理线程同步的问题）*/
-        signal.setFieldValue(phyValue,newModel) ;
-        //System.out.println("计算后 ，rawValue="+rawValue+" , phyValue="+phyValue);
-        //如果准备输出 double 类型数据，首先判断 总线值不可以是 0xFF 。
-        if ((!isInteger(factor)||!isInteger(offset)||! isInteger(phyValue))) { //判断是否是小数，是则下一步
-            //新增代码，加入无效值判断
-            if ( checkAllOnes(rawValue,bitLength) ){ // 全为1，则是0xFF，则无效化处理。
-                signal.setValid(false); //设置无效值
-            }
-            else {
-                signal.setValid(true);
-            }
-        }
-        //另外，如果是整型的数据，仍然有可能输出0xFF表示无效。但是不能直接将0XFF视为无效值，因为有的是枚举变量。所以啊，统一协议，任重而道远啊。一旦统一了所有信号全1为无效，代码就方便多了。
-    } // bits64ToField()
+        return phyValue;
+    } // bits64ToValue()
 
     /* 一些共用方法 */
     /**
@@ -213,7 +206,7 @@ public class CanIOHandler {
      * @param startBit  起始位
      * @param bitLength 数据长度
      */
-    public void sigToBits64(byte[] sendCanData, int instanceValue, int startBit , int bitLength, CANByteOrder instanceByteOrder ) {
+    private void sigToBits64(byte[] sendCanData, int instanceValue, int startBit , int bitLength, CANByteOrder instanceByteOrder ) {
         MyByte.DataType inputType = transOrder(instanceByteOrder);
         byte[] src = MyByte.intToBits(instanceValue,inputType,bitLength)  ;  //将总线值变成 0或者1 的数组
         System.arraycopy( src ,0, sendCanData , startBit , bitLength  );  //将数组赋值到目标 8*8 = 64 bits 的矩阵中
@@ -226,7 +219,7 @@ public class CanIOHandler {
      * @param startBit  起始位
      * @param bitLength 数据长度
      */
-    public void sigToBits64(byte[] bits64, double instanceValue, int startBit , int bitLength, double factor , double offset , CANByteOrder instanceByteOrder) {
+    private void sigToBits64(byte[] bits64, double instanceValue, int startBit , int bitLength, double factor , double offset , CANByteOrder instanceByteOrder) {
         //System.out.println("待计算值，startBit = " + startBit +" ;  bitLength = "+bitLength+" ;  factor = " + factor + " ; offset = " + offset+",instanceValue = "+instanceValue) ;
         int rawValue  = (int) ( (instanceValue - offset) / factor ); //获取总线值
         //System.out.println("计算后 ，rawValue="+rawValue);
@@ -246,7 +239,7 @@ public class CanIOHandler {
         return inputType;
     }
 
-    /* 以下函数 均被弃用。因为每次解析报文实际上是CPU密集型任务,并且每次的计算量很小，只有64bit的计算量。
+    /* 以下函数 均被弃用。因为每次解析报文实际上是每次的计算量很小，只有64bit的计算量。
     * 同时，由于任务大小很小，开启线程不会带来明显性能提升，反而可能因线程切换增加开销。
     * 同时，因为任务次数很多，线程会频繁的切换，导致性能下降。
     *
@@ -284,8 +277,10 @@ public class CanIOHandler {
         //System.out.println("正在解析接收报文，解析报文 ID = " + MyByte.hex2Str(canId));
         // 遍历消息，取出数组值,并修改所有的消息值 。可用线程池或者并行流优化。可以考虑使用并行流（parallelStream()）来简化代码。并行流会自动处理并发执行，并且代码会更加简洁。
         msg.getSignalMap().values().parallelStream().forEach(
-                signal ->
-                        bits64ToField(data64, signal, signal.getStartBit(), signal.getBitLength(), signal.getFactor(), signal.getOffset())
+                signal ->{
+                    double phyValue = bits64ToValue(data64, signal, signal.getStartBit(), signal.getBitLength(), signal.getFactor(), signal.getOffset());
+                    signal.writeValue(phyValue);
+                }
         ); // 64 --> signal
     }
     /* 以下是发送函数 */

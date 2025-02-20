@@ -21,6 +21,7 @@ public class CanIOHandlerTest {
     static final int msg3_Id = 0x18AB_AB03; //
     /* 1.完成DBC和数据模型的绑定。 */
     static String path1 = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\Example.dbc";
+    static String path2 = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\Example2.dbc";
 
     /** model = Msg1 = { <br>
      msg1_sig1 :30,<br>
@@ -41,10 +42,12 @@ public class CanIOHandlerTest {
     List<CanFrameData> canFrameDataList2;
     long bindTimeCost;
     {
+        /* 手动绑定存在很多问题，故也准备把这一部分优化了 */
         manager.addDbcToMap("testDbc",path1); // 绑定DBC文件
+        manager.addDbcToMap("testDbc2",path2); // 绑定DBC文件
 
         long startTime = System.currentTimeMillis();
-        manager.bindDataModelAndField(model); // 绑定数据模型
+        manager.bindModelAndField(model.getClass(),model); // 绑定数据模型
         long endTime = System.currentTimeMillis();
         bindTimeCost = endTime - startTime;
         //System.out.println("绑定耗时 : " + bindTimeCost+" 毫秒");
@@ -89,21 +92,6 @@ public class CanIOHandlerTest {
         // 耗时10毫秒左右
     }
     /**
-     * 测试绑定耗时
-     */
-    @Test
-    public void bindLoop(){
-
-        long startTime = System.currentTimeMillis();
-        for (int i = 0; i< loopTime ;i++){
-            manager.bindDataModelAndField(model); // 绑定数据模型
-        }
-        long endTime = System.currentTimeMillis();
-        bindTimeCost = endTime - startTime;
-        System.out.println("绑定对象 "+ loopTime +"次， 耗时 : " + bindTimeCost +" 毫秒");
-        // 一万次绑定，稳定在 300 毫秒 。 十万次稳定 800
-    }
-    /**
      * 采用了并发流处理报文
      */
     @Test
@@ -129,7 +117,7 @@ public class CanIOHandlerTest {
         long startTime = System.currentTimeMillis();
         for (int i = 0 ;i<num ;i++){
             // 以下代码用于测试报文的  接收
-            canIOHandler.canToField_B(msg1_Id,data8_);
+            canIOHandler.receive_B(msg1_Id,data8_);
             //System.out.println("model = "+ model.getMsg1Value());
         }
         long endTime = System.currentTimeMillis();
@@ -144,7 +132,7 @@ public class CanIOHandlerTest {
         CanIOHandler canIOHandler = manager.getCanIo("testDbc");
         long startTime = System.currentTimeMillis();
         for (int i = 0 ;i<num ;i++){
-            canIOHandler.syncCanToField_B(msg1_Id,data8_);
+            canIOHandler.syncReceive_B(msg1_Id,data8_);
             //System.out.println("model = "+ model.getMsg1Value());
         }
         long endTime = System.currentTimeMillis();
@@ -172,7 +160,7 @@ public class CanIOHandlerTest {
                 lock.lock();
                 try {
                     //System.out.println("Task " + MyByte.hex2Str(canId) + " is running on " + Thread.currentThread().getName());
-                    canIOHandler.canToField_B(canId,data);
+                    canIOHandler.receive_B(canId,data);
                     Thread.sleep(1000);
                 }catch (Exception e){
                     e.printStackTrace();
@@ -245,7 +233,7 @@ public class CanIOHandlerTest {
                 lock.lock();
                 try {
                     //System.out.println("Task " + MyByte.hex2Str(canId) + " is running on " + Thread.currentThread().getName());
-                    canIOHandler.canToField_B(canId,data);
+                    canIOHandler.receive_B(canId,data);
                     //Thread.sleep(1000);
                 }catch (Exception e){
                     e.printStackTrace();
@@ -273,13 +261,15 @@ public class CanIOHandlerTest {
     public void singleThreadTest2(){
         CanIOHandler canIOHandler = manager.getCanIo("testDbc");
 
+        int num = 10;
+
         long startTime = System.currentTimeMillis();
         for (int i = 0 ; i < num ; i++){
             CanFrameData canFrameData = getRandomData();
             int canId = canFrameData.getMsgId();
             byte[] data = canFrameData.getBytes8();
-            canIOHandler.canToField_B(canId,data);
-            //System.out.println("model = "+ model.getMsg1Value());
+            canIOHandler.receive_B(canId,data);
+            System.out.println("model = "+ model.getMsg1Value());
         }
         long endTime = System.currentTimeMillis();
         long timeCost = endTime - startTime;
@@ -301,7 +291,7 @@ public class CanIOHandlerTest {
 
 
         // 使用数据，产生一个初始值
-        canIOHandler.canToField_B(msg1_Id,data8_);
+        canIOHandler.receive_B(msg1_Id,data8_);
         System.out.println("初始数据 model = "+ model.getMsg1Value());
         /* 初始数据：
          model = Msg1 = { <br>
@@ -322,7 +312,7 @@ public class CanIOHandlerTest {
             model.updateValue();
 
             // 现需要根据新的模型值，产生一个新的报文。
-            int[] canFrame = canIOHandler.fieldToCan_I(msg1_Id);
+            int[] canFrame = canIOHandler.outCanFrame_I(msg1_Id);
 
             // 产生报文 = [11, 12, 13, 14, 217, 121, 194, 110] 正确
             // System.out.println("产生报文 = "+ Arrays.toString(canFrame));

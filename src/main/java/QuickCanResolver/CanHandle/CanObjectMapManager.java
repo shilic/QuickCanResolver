@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CanObjectMapManager {
     protected Map<String, CanDbc> dbcMap;
     protected Map<String, CanIOHandler> canIOMap;
-    protected static CanObjectMapManager manager;
+    protected static volatile CanObjectMapManager manager;
 
 
 
@@ -24,7 +24,6 @@ public class CanObjectMapManager {
      * @param clazz 数据模型Class
      */
     public <T> T bind(Class<T> clazz) {
-        T instance = creatInstance(clazz);
         // 获取类上的注解
         if (! clazz.isAnnotationPresent(DbcBinding.class)) {
             return null; // 没有则直接返回null
@@ -33,8 +32,8 @@ public class CanObjectMapManager {
         DbcBinding dbcBinding = clazz.getAnnotation(DbcBinding.class);
         // 现在可以一次性给一个数据模型绑定多个DBC
         DbcBinding.Dbc[] rawDbcArray = dbcBinding.value();
-        // 循环，遍历多个DBC文件
-        for (DbcBinding.Dbc rawDbc : rawDbcArray){
+        // 循环，遍历多个DBC文件，绑定DBC
+        for (DbcBinding.Dbc rawDbc : rawDbcArray) {
             String dbcTag = rawDbc.dbcTag();
             String dbcFilePath = rawDbc.dbcPath();
             // 增加校验，避免反复创建dbc。
@@ -43,14 +42,11 @@ public class CanObjectMapManager {
             }
             // 生成 dbc ，并添加到map中。即初始化一个Dbc文件
             addDbcToMap(dbcTag,dbcFilePath);
-            // 给 dbc 中的 CanSignal 绑定字段
-            bindField(clazz);
             System.out.println("DBC绑定成功，dbcTag = " + dbcTag + ", dbcFilePath = " + dbcFilePath);
         } // 循环，遍历多个DBC文件
-
-        // 给 dbc 单独绑定数据模型，由于已经绑定了字段，故只需要到dbcMap中查找即可
-        // TODO 绑定 instance
-
+        T instance = creatInstance(clazz);
+        // 给 dbc 中的 CanSignal 绑定字段 ，以及模型
+        bindModelAndField(clazz,instance);
         return instance; // 返回实例化之后的数据模型
     }
     public static <T> T creatInstance(Class<T> clazz) {
@@ -72,11 +68,12 @@ public class CanObjectMapManager {
      */
     public CanDbc addDbcToMap(String dbcTag, String dbcFilePath) {
         //生成一个 DBC
-        CanDbc dbc = DbcHandle.getDbcFromFile(dbcTag,dbcFilePath);
+        CanDbc dbc = DbcParse.getDbcFromFile(dbcTag,dbcFilePath);
         dbcMap.put(dbcTag,dbc);
         return dbc;
     }
 
+    // PS: 为什么要新增这个 createNewModel 方法，因为 如果绑定的数据类是用的 final修饰的每一个字段，那么只能通过拷贝的方式得到新数据。
     /**
      * 使用新的数据，拷贝一个新的数据对象出来。<br> 用于提供给 LiveData 和 viewModel。<br>
      * @param canId canId
@@ -84,28 +81,33 @@ public class CanObjectMapManager {
      * @param oldDataModel 旧的对象
      * @return 新的对象。
      */
-    public  <T extends CanCopyable<T>> T createNewDataModel(int canId, byte[] data8, T oldDataModel) {
+    public  <T extends CanCopyable<T>> T createNewModel(int canId, byte[] data8, T oldDataModel) {
+        // 根据 canId 确定要写入哪一个 DBC
+        String dbcTag = findDbcTagByCanId(canId);
+        // 根据 DbcTag 获取处理者
+        CanIOHandler canIOHandler = getCanIo(dbcTag);
+        // 更新数据到 模型中
+        canIOHandler.updateObj_B(canId,data8,oldDataModel);
+
         // 拷贝一个新的对象。
-        T newObj = oldDataModel.copyNew();
-        // 然后重新绑定 Model，用于生成新的数据模型 TODO
-
-        // 再写入新数据 TODO
-
-        return newObj;
+        return oldDataModel.copyNew();
     }
 
     /**
-     * TODO 封装 CanIOHandler 的 update_B() 方法
+     * 封装 CanIOHandler 的 receive_B() 方法
      */
-    public void update_B(int canId, byte[] data8){
-
-
+    public void receive_B(int canId, byte[] data8) {
+        // 根据 canId 确定要写入哪一个 DBC
+        String dbcTag = findDbcTagByCanId(canId);
+        // 根据 DbcTag 获取处理者
+        CanIOHandler canIOHandler = getCanIo(dbcTag);
+        canIOHandler.receive_B(canId,data8);
     }
 
     /**
-     * TODO 反向操作，封装 CanIOHandler 类的 fieldToCan_I() 方法
+     * TODO 反向操作，封装 CanIOHandler 类的 outCanFrame_I() 方法
      */
-    public int[] createCanFrameI(){
+    public int[] outCanFrame_I() {
 
 
         return null;
@@ -114,7 +116,7 @@ public class CanObjectMapManager {
     /**
      * 根据canID查询dbcTag
      */
-    private String findDbcTagFromMap(int canId) {
+    private String findDbcTagByCanId(int canId) {
         String dbcTag = null;
         for (CanDbc dbc : dbcMap.values()){
             if (dbc.getIntMsgMap().containsKey(canId)){
@@ -124,7 +126,7 @@ public class CanObjectMapManager {
         }
         return dbcTag;
     }
-    private static String[] findDbcTagsFromClass(Class<?> clazz){
+    private static String[] findDbcTagsFromClass(Class<?> clazz) {
         String[] dbcTags = null ;
         if (clazz.isAnnotationPresent(DbcBinding.class)) {
             // 拿到注解
@@ -132,7 +134,7 @@ public class CanObjectMapManager {
             DbcBinding.Dbc[] rawDbcArray = dbcBinding.value();
             int size = rawDbcArray.length;
             dbcTags = new String[size];
-            for (int i = 0 ; i < size ; i++){
+            for (int i = 0 ; i < size ; i++) {
                 dbcTags[i] = rawDbcArray[i].dbcTag();
             }
         }
@@ -142,54 +144,6 @@ public class CanObjectMapManager {
         Class<?> clazz = model.getClass();
         return findDbcTagsFromClass(clazz);
     }
-    /**
-     * 绑定数据模型，这一次只绑定模型，不绑定字段。<br>
-     * 该方式设计时可用于和 viewModel 的互动。动态生成一个新的对象。<br>
-     * 故我单独把这一部分抽象了出来。<br>
-     * @param dataModel 新的数据模型。
-     */
-    public void bindModel(Object dataModel) {
-
-
-
-
-        // TODO
-    }
-
-    /**
-     * 同时绑定 '数据模型' 和 '字段'，到信号中 <br>
-     * 该方法必须要在绑定了dbc文件之后使用（也就是 addDbcToMap() 方法）。否则会无法将数据模型绑定到DBC中。<br>
-     * @param dataModel 数据模型
-     * @deprecated 注意：该方法随时准备弃用，因为存在用户调用的时序问题，容易出错，建议直接使用 @DbcBinding 注解数据模型。<br>
-     * 使用 manager.bind() 绑定注解好的数据模型 。<br>
-     * 然后使用 newObj = manager.createNewDataModel(id, data8, model); 生成一个新的对象。<br>
-     * 又或者使用 update_B() 刷新数据。
-     */
-    @Deprecated
-    public void bindDataModelAndField(Object dataModel) {
-        Class<?> dataModelClazz = dataModel.getClass();
-        // 循环，查找所有字段
-        for (Field field : dataModelClazz.getDeclaredFields()) {
-            /* 设置setAccessible为true，绕过访问控制检查*/
-            field.setAccessible(true);
-            // 查找到 没有被我注释的字段就执行下一次循环。使用“卫语句”减少 if-else 的嵌套次数。
-            if (! field.isAnnotationPresent(CanBinding.class)) {
-                continue;
-            }
-            CanSignal signal = findSignalByBind(field);
-
-            if (signal != null){
-                // 标记该信号属于哪一个数据模型
-                signal.setDataModel(dataModel);
-                //System.out.println("字段名:"+field.getName()+", 注解值: {"+signalTag+"} 和DBC匹配, 添加到map中。");
-                signal.setField(field);
-            }
-            else {
-                throw new RuntimeException("字段: '"+field.getName()+
-                        "' 中 注解 的信号名称{"+field.getAnnotation(CanBinding.class).signalTag()+"} 在DBC中未找到相关信息。");
-            }
-        } //查找所有字段
-    } // 从对象中获取字段
 
     /**
      * 相比于上面的方法，该方法只绑定字段，不绑定数据模型。<br>
@@ -197,24 +151,31 @@ public class CanObjectMapManager {
      * 步骤也很简单，从已绑定的dbc中查询 CanSignal ,查找是否和字段的注解一致，一致则绑定到 dbc 中。一般在初始化时使用，只会调用一次。
      * @param dataModelClass 数据模型的类
      */
-    private void bindField(Class<?> dataModelClass){
+    public void bindModelAndField(Class<?> dataModelClass, Object model){
         // 循环，查找所有字段
         for (Field field : dataModelClass.getDeclaredFields()) {
+            // 设置setAccessible为true，绕过访问控制检查
             field.setAccessible(true);
+            // 不含有 CanBinding 注解，则忽略，执行下一次循环。
             if (! field.isAnnotationPresent(CanBinding.class)) {
-                continue; // 不含有 CanBinding 注解，则忽略，执行下一次循环。
+                continue;
             }
             // 故以下代码都默认字段包含了 CanBinding 注解。
             CanSignal signal = findSignalByBind(field);
             // 这里的意思就是在包含 CanBinding 注解的情况下，找到了相关信号。
-            if (signal != null){
-                signal.setField(field); // 绑定字段
-            }
-            else {
+            /*PS:代码大量的使用了卫语句来减少if-else的嵌套。用人话来讲就是，如果一个if条件不满足需要返回或者退出，
+            你就不需要继续使用else来嵌套的写满足后的逻辑了。
+            你可以直接在if语句中 return ,break,continue 或者抛出异常。这样子代码更优雅，可读性更好。
+            * */
+            if (signal == null){
                 // 这里抛出异常的意思就是，在包含 CanBinding 注解的情况下，绑定的信息有误，字段绑定的信号在dbc中没有找到，DBC实际上不含这个信号。
                 throw new RuntimeException("字段: '"+field.getName()+
                         "' 绑定信息有误; 实际上未在DBC中未找到你想要绑定的信号{" + field.getAnnotation(CanBinding.class).signalTag() + "} 。");
             }
+            // 绑定字段
+            signal.setField(field);
+            // 绑定模型
+            signal.setDataModel(model);
         } //查找所有字段
     }
 
@@ -271,9 +232,9 @@ public class CanObjectMapManager {
      * @return 返回一个CAN收发器
      */
     public CanIOHandler getCanIo(String dbcTag) {
-        CanDbc dbc = dbcMap.get(dbcTag);
         CanIOHandler canIOHandler = canIOMap.get(dbcTag); // 如果查到了并且不为空，则直接返回
         if (canIOHandler == null) { // 为空则重新创建，并加入到表中
+            CanDbc dbc = dbcMap.get(dbcTag);
             canIOHandler = new CanIOHandler(dbc);
             canIOMap.put(dbcTag, canIOHandler);
         }

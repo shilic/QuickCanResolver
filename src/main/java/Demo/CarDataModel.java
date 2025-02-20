@@ -9,9 +9,10 @@ import QuickCanResolver.CanHandle.DbcBinding;
  *
  */
 //@DbcBinding(dbcTag = "testDbc", dbcPath = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\Example.dbc")
-    // 嵌套注解，实现更为复杂的数据的注解，现在可以传入多个DBC给一个数据模型了
+    // 嵌套注解，实现更为复杂的数据的注解，现在可以传入多个DBC给一个数据模型了。可以使用静态常量
 @DbcBinding({
-    @DbcBinding.Dbc(dbcTag = "testDbc",dbcPath = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\Example.dbc")
+        @DbcBinding.Dbc(dbcTag = Demo1.TEST_DBC, dbcPath = Demo1.DBC_PATH),
+        @DbcBinding.Dbc(dbcTag = "testDbc2", dbcPath = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\Example2.dbc")
 })
 public class CarDataModel implements CanCopyable<CarDataModel> , Cloneable {
     @CanBinding(signalTag = "CabinToCCS1_FactoryID")
@@ -100,6 +101,24 @@ public class CarDataModel implements CanCopyable<CarDataModel> , Cloneable {
     int msg4_sig7;
     int msg4_sig8;
 
+    // 这里是第二个DBC中的数据，框架实现了可以多个模型对应多个DBC的复杂映射关系。
+    @CanBinding(signalTag = "msg9_sig1")
+    int msg9_sig1;
+    @CanBinding(signalTag = "msg9_sig2")
+    int msg9_sig2;
+    @CanBinding(signalTag = "msg9_sig3")
+    int msg9_sig3;
+    @CanBinding(signalTag = "msg9_sig4")
+    int msg9_sig4;
+    @CanBinding(signalTag = "msg9_sig5")
+    int msg9_sig5;
+    @CanBinding(signalTag = "msg9_sig6")
+    int msg9_sig6;
+    @CanBinding(signalTag = "msg9_sig7")
+    int msg9_sig7;
+    @CanBinding(signalTag = "msg9_sig8")
+    int msg9_sig8;
+
 
 
     public String getMsg1Value(){
@@ -125,16 +144,16 @@ public class CarDataModel implements CanCopyable<CarDataModel> , Cloneable {
 
     @Override
     public CarDataModel copyNew() {
-        // TODO 需要本类实现 CanCopyable<T> 接口，并需要自己实现 拷贝方法 。
+        // TODO 需要你自己实现 CanCopyable<T> 接口，并需要自己实现 拷贝方法，并返回自身 。下边的代码只是一个示例，你也可以采用其他拷贝方式。
         return clone();
     }
 
     @Override
-    public CarDataModel clone(){
+    public CarDataModel clone() {
         try {
             return (CarDataModel) super.clone();
         } catch (CloneNotSupportedException e) {
-            throw new RuntimeException("Clone not supported", e);
+            throw new RuntimeException("克隆失败", e);
         }
     }
 }

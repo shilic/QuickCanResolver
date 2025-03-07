@@ -58,6 +58,7 @@ public class BindDbcTest {
      */
     @Test
     public void test1() {
+        System.out.println("test1");
         int num = 10 ;
         // 1 获取一个管理器
         CanObjectMapManager manager = CanObjectMapManager.getInstance();
@@ -91,6 +92,7 @@ public class BindDbcTest {
      */
     @Test
     public void test2() {
+        System.out.println("test2");
         int num = 10;
 
         // 1 获取一个管理器

@@ -94,6 +94,7 @@ public class CanIOHandlerTest {
     /**
      * 采用了并发流处理报文
      */
+    @SuppressWarnings("deprecation")
     @Test
     public void concurrentTest(){
         CanIOHandler canIOHandler = manager.getCanIo("testDbc");
@@ -284,6 +285,7 @@ public class CanIOHandlerTest {
     /**
      * 测试报文的编码.(反向操作)
      */
+    @SuppressWarnings("unused")
     @Test
     public void fieldToCanITest() {
         CanIOHandler canIOHandler = manager.getCanIo("testDbc");

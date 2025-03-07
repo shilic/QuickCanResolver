@@ -397,6 +397,7 @@ public class MyByte {
      * @param value double类型变量
      * @return String 类型
      */
+    @SuppressWarnings("unused")
     private static String doubleToString8(double value){
         DecimalFormat decimalFormat = new DecimalFormat("0.########");
         return decimalFormat.format(value);

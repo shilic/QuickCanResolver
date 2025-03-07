@@ -206,6 +206,7 @@ public class CanIOHandler {
      * @param startBit  起始位
      * @param bitLength 数据长度
      */
+    @SuppressWarnings("unused")
     private void sigToBits64(byte[] sendCanData, int instanceValue, int startBit , int bitLength, CANByteOrder instanceByteOrder ) {
         MyByte.DataType inputType = transOrder(instanceByteOrder);
         byte[] src = MyByte.intToBits(instanceValue,inputType,bitLength)  ;  //将总线值变成 0或者1 的数组

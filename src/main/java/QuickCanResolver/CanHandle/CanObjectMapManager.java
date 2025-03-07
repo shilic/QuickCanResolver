@@ -140,6 +140,7 @@ public class CanObjectMapManager {
         }
         return dbcTags;
     }
+    @SuppressWarnings("unused")
     private static String[] findDbcTagsFromModel(Object model) {
         Class<?> clazz = model.getClass();
         return findDbcTagsFromClass(clazz);

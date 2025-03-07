@@ -144,7 +144,7 @@ public class CarDataModel implements CanCopyable<CarDataModel> , Cloneable {
 
     @Override
     public CarDataModel copyNew() {
-        // TODO 需要你自己实现 CanCopyable<T> 接口，并需要自己实现 拷贝方法，并返回自身 。下边的代码只是一个示例，你也可以采用其他拷贝方式。
+        // TODO:(需要你自己实现 CanCopyable<T> 接口，并需要自己实现 拷贝方法，并返回自身 。下边的代码只是一个示例，你也可以采用其他拷贝方式。)
         return clone();
     }
 

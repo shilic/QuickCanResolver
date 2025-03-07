@@ -12,6 +12,7 @@ public class DbcTest {
     /**
      * 测试基本的CAN收发
      */
+    @SuppressWarnings("deprecation")
     @Test
     public void test1(){
         String path1 = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\大屏协议（测试版2）GBK编码.dbc";

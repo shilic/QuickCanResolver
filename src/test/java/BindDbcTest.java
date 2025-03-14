@@ -102,22 +102,41 @@ public class BindDbcTest {
 
         // 初始化数据，也可以不初始化
         manager.receive_B(msg1_Id,data8_);
-        //oldModel Value = Msg1 = {msg1_sig1 :30, msg1_sig2 :29, msg1_sig3 = 28, msg1_sig4 = 20 ,
-        // msg1_sig5: 22.200000000000003, msg1_sig6 :10.5, msg1_sig7 = -80.5, msg1_sig8 = 110.0}
         System.out.println("oldModel Value = " + oldModel.getMsg1Value());  //打印值
-        // 打印 hash 码 Demo.CarDataModel@6ec8211c
-        System.out.println("oldModel  = " + oldModel+"\n");
+        /* 初始化数据打印如下
+         * oldModel Value =
+         * Msg1 = {msg1_sig1 :30,
+         * msg1_sig2 :29,
+         * msg1_sig3 = 28,
+         * msg1_sig4 = 20 ,
+         * msg1_sig5: 22.200000000000003,
+         * msg1_sig6 :10.5,
+         * msg1_sig7 = -80.5,
+         * msg1_sig8 = 110.0}
+         */
+        System.out.println("oldModel  = " + oldModel + "\n");
+        // 打印 原始对象的 hash 码 Demo.CarDataModel@6ec8211c
 
         long startTime = System.currentTimeMillis();
         for (int i = 0 ; i < num ; i++) {
             // 用新数据和旧的模型生成一个新的模型
             CarDataModel newModel = manager.createNewModel(msg1_Id,data8_2,oldModel);
 
-            // newModel Value = Msg1 = {msg1_sig1 :7, msg1_sig2 :8, msg1_sig3 = 9, msg1_sig4 = 10 ,
-            // msg1_sig5: 22.200000000000003, msg1_sig6 :10.5, msg1_sig7 = -80.5, msg1_sig8 = 110.0}
             System.out.println("newModel Value = "+ newModel.getMsg1Value());
-            // 打印 hash 码 Demo.CarDataModel@7276c8cd
+            /* 更新数据打印如下
+             *  newModel Value =
+             * Msg1 = {msg1_sig1 :7,
+             * msg1_sig2 :8,
+             * msg1_sig3 = 9,
+             * msg1_sig4 = 10 ,
+             * msg1_sig5: 22.200000000000003,
+             * msg1_sig6 :10.5,
+             * msg1_sig7 = -80.5,
+             * msg1_sig8 = 110.0}
+             */
             //System.out.println("newModel  = " + newModel);
+            // 打印 新对象 的 hash 码 Demo.CarDataModel@7276c8cd
+            // 可见，对象的hash码发生了变化，数据得到了更新
         }
         long endTime = System.currentTimeMillis();
         long timeCost = endTime - startTime;

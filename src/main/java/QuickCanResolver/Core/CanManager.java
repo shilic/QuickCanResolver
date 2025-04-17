@@ -1,6 +1,6 @@
 package QuickCanResolver.CanHandle;
 
-import QuickCanResolver.DBC.SignalIOService;
+import QuickCanResolver.DBC.FieldChanger;
 import QuickCanResolver.DBC.CanSignal;
 import QuickCanResolver.DBC.CanDbc;
 import QuickCanResolver.DBC.CanMessage;
@@ -11,11 +11,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class CanObjectMapManager {
+public class CanManager {
     protected Map<String, CanDbc> dbcMap;
-    protected Map<String, CanIOHandler> canIOMap;
-    protected static volatile CanObjectMapManager manager;
-
+    protected Map<String, CanCoder> canCoderMap;
+    protected static volatile CanManager canManager;
+    protected Map<Class<?>,Object> modelMap ;
 
 
     /**框架最主要方法 ： 绑定 dbc <br>
@@ -23,7 +23,7 @@ public class CanObjectMapManager {
      * 已经封装好所有步骤，供外部直接调用。
      * @param clazz 数据模型Class
      */
-    public <T> T bind(Class<T> clazz) {
+    public <T extends CanCopyable<T>> T bind(Class<T> clazz) {
         // 获取类上的注解
         if (! clazz.isAnnotationPresent(DbcBinding.class)) {
             return null; // 没有则直接返回null
@@ -44,12 +44,13 @@ public class CanObjectMapManager {
             addDbcToMap(dbcTag,dbcFilePath);
             System.out.println("DBC绑定成功，dbcTag = " + dbcTag + ", dbcFilePath = " + dbcFilePath);
         } // 循环，遍历多个DBC文件
-        T instance = creatInstance(clazz);
+        T instance = createInstance(clazz);
+        modelMap.putIfAbsent(clazz,instance);
         // 给 dbc 中的 CanSignal 绑定字段 ，以及模型
         bindModelAndField(clazz,instance);
         return instance; // 返回实例化之后的数据模型
     }
-    public static <T> T creatInstance(Class<T> clazz) {
+    public static <T> T createInstance(Class<T> clazz) {
         try {
             // 获取无参构造函数
             Constructor<T> constructor = clazz.getDeclaredConstructor();
@@ -61,6 +62,13 @@ public class CanObjectMapManager {
             throw new RuntimeException("反射实例化数据模型时出错"+e.getMessage(), e);
         }
     }
+    // 新增一个方法，返回绑定的模型。当多个模型和多个报文进行绑定时，接收一个报文可能返回多个数据模型。故需要单独做一个接收
+    public <T extends CanCopyable<T>> T getModel(Class<T> clazz) {
+        return (T) modelMap.get(clazz); // 如果没有查询到，那么会返回空
+    }
+
+
+
     /**
      * 注册DBC文件，即初始化一个Dbc文件
      * @param dbcTag DBC标签
@@ -73,44 +81,37 @@ public class CanObjectMapManager {
         return dbc;
     }
 
-    // PS: 为什么要新增这个 createNewModel 方法，因为 如果绑定的数据类是用的 final修饰的每一个字段，那么只能通过拷贝的方式得到新数据。
     /**
      * 使用新的数据，拷贝一个新的数据对象出来。<br> 用于提供给 LiveData 和 viewModel。<br>
-     * @param canId canId
-     * @param data8 8位数组
-     * @param oldDataModel 旧的对象
      * @return 新的对象。
      */
-    public  <T extends CanCopyable<T>> T createNewModel(int canId, byte[] data8, T oldDataModel) {
-        // 根据 canId 确定要写入哪一个 DBC
-        String dbcTag = findDbcTagByCanId(canId);
-        // 根据 DbcTag 获取处理者
-        CanIOHandler canIOHandler = getCanIo(dbcTag);
-        // 更新数据到 模型中
-        canIOHandler.updateObj_B(canId,data8,oldDataModel);
-
+    public  <T extends CanCopyable<T>> T createNewModel(Class<T> clazz) {
+        T oldDataModel = getModel(clazz);
         // 拷贝一个新的对象。
         return oldDataModel.copyNew();
     }
 
     /**
-     * 封装 CanIOHandler 的 receive_B() 方法
+     * 封装  deCode_B() 方法。接收数据，解码报文。 将接收到的CAN报文，解析后存入绑定好的数据模型中
      */
-    public void receive_B(int canId, byte[] data8) {
+    public void deCode_B(int canId, byte[] data8) {
         // 根据 canId 确定要写入哪一个 DBC
         String dbcTag = findDbcTagByCanId(canId);
         // 根据 DbcTag 获取处理者
-        CanIOHandler canIOHandler = getCanIo(dbcTag);
-        canIOHandler.receive_B(canId,data8);
+        CanCoder canCoder = getCanCoder(dbcTag);
+        // 更新数据到 模型中
+        canCoder.deCode_B(canId,data8);
     }
 
     /**
-     * TODO 反向操作，封装 CanIOHandler 类的 outCanFrame_I() 方法
+     * 封装  enCode_I() 方法。编码数据，发送报文。
      */
-    public int[] outCanFrame_I() {
-
-
-        return null;
+    public int[] enCode_I(int canId) {
+        // 根据 canId 确定要写入哪一个 DBC
+        String dbcTag = findDbcTagByCanId(canId);
+        // 根据 DbcTag 获取处理者
+        CanCoder canCoder = getCanCoder(dbcTag);
+        return canCoder.enCode_I(canId);
     }
 
     /**
@@ -228,38 +229,38 @@ public class CanObjectMapManager {
 
 
     /**
-     * 获取某一个DBC的IO组件
+     * 获取某一个DBC的CAN解编码器
      * @param dbcTag DBC的标签
      * @return 返回一个CAN收发器
      */
-    public CanIOHandler getCanIo(String dbcTag) {
-        CanIOHandler canIOHandler = canIOMap.get(dbcTag); // 如果查到了并且不为空，则直接返回
-        if (canIOHandler == null) { // 为空则重新创建，并加入到表中
+    public CanCoder getCanCoder(String dbcTag) {
+        CanCoder canCoder = canCoderMap.get(dbcTag); // 如果查到了并且不为空，则直接返回
+        if (canCoder == null) { // 为空则重新创建，并加入到表中
             CanDbc dbc = dbcMap.get(dbcTag);
-            canIOHandler = new CanIOHandler(dbc);
-            canIOMap.put(dbcTag, canIOHandler);
+            canCoder = new CanCoder(dbc);
+            canCoderMap.put(dbcTag, canCoder);
         }
-        return canIOHandler;
+        return canCoder;
     }
 
     /**
      * 使用单例模式获取一个 “CAN对象映射管理器”
      * @return “CAN对象映射管理器”
      */
-    public static CanObjectMapManager getInstance() {
-        if (manager == null){
-            synchronized (CanObjectMapManager.class){
-                if (manager == null){
-                    return manager = new CanObjectMapManager();
+    public static CanManager getInstance() {
+        if (canManager == null){
+            synchronized (CanManager.class){
+                if (canManager == null){
+                    return canManager = new CanManager();
                 }
             }
         }
-        return manager;
+        return canManager;
     }
-    private CanObjectMapManager() {
+    private CanManager() {
         dbcMap = new ConcurrentHashMap<>();
-        canIOMap = new ConcurrentHashMap<>();
-
+        canCoderMap = new ConcurrentHashMap<>();
+        modelMap = new ConcurrentHashMap<>();
     }
 
     /**
@@ -280,15 +281,15 @@ public class CanObjectMapManager {
     /**
      * 清理指定 canIO
      */
-    public void clearCanIO(String dbcTag){
-        canIOMap.remove(dbcTag);
+    public void clearCanTransform(String dbcTag){
+        canCoderMap.remove(dbcTag);
     }
 
     /**
      * 清理所有 canIO
      */
     public void clearAllCanIO(){
-        canIOMap.clear();
+        canCoderMap.clear();
     }
 
     /**
@@ -304,6 +305,25 @@ public class CanObjectMapManager {
 
 
 
+    /**
+     * 使用新的数据，拷贝一个新的数据对象出来。<br> 用于提供给 LiveData 和 viewModel。<br>
+     * @param canId canId
+     * @param data8 8位数组
+     * @param oldDataModel 旧的对象
+     * @return 新的对象。
+     */
+    @Deprecated
+    public  <T extends CanCopyable<T>> T createNewModel(int canId, byte[] data8, T oldDataModel) {
+        // 根据 canId 确定要写入哪一个 DBC
+        String dbcTag = findDbcTagByCanId(canId);
+        // 根据 DbcTag 获取处理者
+        CanCoder canCoder = getCanCoder(dbcTag);
+        // 更新数据到 模型中
+        canCoder.updateObj_B(canId,data8,oldDataModel);
+
+        // 拷贝一个新的对象。
+        return oldDataModel.copyNew();
+    }
     /**
      * 使用并发流，获取一个CAN消息
      * @deprecated 任务过小，并发流实际上会增加线程开销，导致负优化
@@ -333,7 +353,7 @@ public class CanObjectMapManager {
             Object model = signal.getDataModel(); // 原始对象
             //double sigValue = signal.currentValue ; /* 3. 拿到DBC的数据 */
             /* 4. 将 字段中的数据刷写到DBC中 */
-            signal.currentValue = SignalIOService.getFieldValue(field,model); // 弃用
+            signal.currentValue = FieldChanger.getFieldValue(field,model); // 弃用
         });
     } // updateModelToDbc
 
@@ -355,7 +375,7 @@ public class CanObjectMapManager {
             Object model = signal.getDataModel(); // 原始对象
             double sigValue = signal.currentValue ; /* 3. 拿到DBC的数据(弃用) */
             /* 4. 将 DBC中数据 刷写道 字段中 */
-            SignalIOService.setFieldValue(field, model, sigValue);
+            FieldChanger.setFieldValue(field, model, sigValue);
         });
     } // 更新DBC的数据至数据模型中
 }

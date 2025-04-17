@@ -1,7 +1,7 @@
 import Demo.CarDataModel;
 import QuickCanResolver.CanHandle.CanFrameData;
-import QuickCanResolver.CanHandle.CanIOHandler;
-import QuickCanResolver.CanHandle.CanObjectMapManager;
+import QuickCanResolver.CanHandle.CanTrans;
+import QuickCanResolver.CanHandle.CanCoder;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class CanIOHandlerTest {
+public class CanTransTest {
     static int num = 100000;
     static final int loopTime = 100000;
     static final int msg1_Id = 0x18AB_AB01 ; // message1
@@ -37,17 +37,17 @@ public class CanIOHandlerTest {
 
 
     CarDataModel model = new CarDataModel();
-    CanObjectMapManager manager = CanObjectMapManager.getInstance();
+    CanCoder canCoder = CanCoder.getInstance();
     List<CanFrameData> canFrameDataList;
     List<CanFrameData> canFrameDataList2;
     long bindTimeCost;
     {
         /* 手动绑定存在很多问题，故也准备把这一部分优化了 */
-        manager.addDbcToMap("testDbc",path1); // 绑定DBC文件
-        manager.addDbcToMap("testDbc2",path2); // 绑定DBC文件
+        canCoder.addDbcToMap("testDbc",path1); // 绑定DBC文件
+        canCoder.addDbcToMap("testDbc2",path2); // 绑定DBC文件
 
         long startTime = System.currentTimeMillis();
-        manager.bindModelAndField(model.getClass(),model); // 绑定数据模型
+        canCoder.bindModelAndField(model.getClass(),model); // 绑定数据模型
         long endTime = System.currentTimeMillis();
         bindTimeCost = endTime - startTime;
         //System.out.println("绑定耗时 : " + bindTimeCost+" 毫秒");
@@ -97,11 +97,11 @@ public class CanIOHandlerTest {
     @SuppressWarnings("deprecation")
     @Test
     public void concurrentTest(){
-        CanIOHandler canIOHandler = manager.getCanIo("testDbc");
+        CanTrans canTrans = canCoder.getCanTransform("testDbc");
         long startTime = System.currentTimeMillis();
         for (int i = 0 ;i<num ;i++){
             // 以下代码用于测试报文的  接收
-            canIOHandler.concurrentCanToField(msg1_Id,data8_);
+            canTrans.concurrentCanToField(msg1_Id,data8_);
             //System.out.println("model = "+ model.getMsg1Value());
         }
         long endTime = System.currentTimeMillis();
@@ -114,11 +114,11 @@ public class CanIOHandlerTest {
      */
     @Test
     public void singleThreadTest(){
-        CanIOHandler canIOHandler = manager.getCanIo("testDbc");
+        CanTrans canTrans = canCoder.getCanTransform("testDbc");
         long startTime = System.currentTimeMillis();
         for (int i = 0 ;i<num ;i++){
             // 以下代码用于测试报文的  接收
-            canIOHandler.receive_B(msg1_Id,data8_);
+            canTrans.deCode_B(msg1_Id,data8_);
             //System.out.println("model = "+ model.getMsg1Value());
         }
         long endTime = System.currentTimeMillis();
@@ -130,10 +130,10 @@ public class CanIOHandlerTest {
      */
     @Test
     public void syncTest(){
-        CanIOHandler canIOHandler = manager.getCanIo("testDbc");
+        CanTrans canTrans = canCoder.getCanTransform("testDbc");
         long startTime = System.currentTimeMillis();
         for (int i = 0 ;i<num ;i++){
-            canIOHandler.syncReceive_B(msg1_Id,data8_);
+            canTrans.syncDeCode_B(msg1_Id,data8_);
             //System.out.println("model = "+ model.getMsg1Value());
         }
         long endTime = System.currentTimeMillis();
@@ -146,7 +146,7 @@ public class CanIOHandlerTest {
      */
     @Test
     public void poolTest(){
-        CanIOHandler canIOHandler = manager.getCanIo("testDbc");
+        CanTrans canTrans = canCoder.getCanTransform("testDbc");
 
         long startTime = System.currentTimeMillis();
 
@@ -156,12 +156,12 @@ public class CanIOHandlerTest {
         for (CanFrameData canFrameData : canFrameDataList){
             int canId = canFrameData.getMsgId();
             byte[] data = canFrameData.getBytes8();
-            ReentrantLock lock = canIOHandler.getLock(canId);
+            ReentrantLock lock = canTrans.getLock(canId);
             executor.submit(() -> {
                 lock.lock();
                 try {
                     //System.out.println("Task " + MyByte.hex2Str(canId) + " is running on " + Thread.currentThread().getName());
-                    canIOHandler.receive_B(canId,data);
+                    canTrans.deCode_B(canId,data);
                     Thread.sleep(1000);
                 }catch (Exception e){
                     e.printStackTrace();
@@ -202,7 +202,7 @@ public class CanIOHandlerTest {
      */
     @Test
     public void poolTest2() {
-        CanIOHandler canIOHandler = manager.getCanIo("testDbc");
+        CanTrans canTrans = canCoder.getCanTransform("testDbc");
 
         long startTime = System.currentTimeMillis();
 
@@ -229,12 +229,12 @@ public class CanIOHandlerTest {
                     break;
             }
 
-            ReentrantLock lock = canIOHandler.getLock(canId);
+            ReentrantLock lock = canTrans.getLock(canId);
             executor.submit(() -> {
                 lock.lock();
                 try {
                     //System.out.println("Task " + MyByte.hex2Str(canId) + " is running on " + Thread.currentThread().getName());
-                    canIOHandler.receive_B(canId,data);
+                    canTrans.deCode_B(canId,data);
                     //Thread.sleep(1000);
                 }catch (Exception e){
                     e.printStackTrace();
@@ -260,7 +260,7 @@ public class CanIOHandlerTest {
      */
     @Test
     public void singleThreadTest2(){
-        CanIOHandler canIOHandler = manager.getCanIo("testDbc");
+        CanTrans canTrans = canCoder.getCanTransform("testDbc");
 
         int num = 10;
 
@@ -269,7 +269,7 @@ public class CanIOHandlerTest {
             CanFrameData canFrameData = getRandomData();
             int canId = canFrameData.getMsgId();
             byte[] data = canFrameData.getBytes8();
-            canIOHandler.receive_B(canId,data);
+            canTrans.deCode_B(canId,data);
             System.out.println("model = "+ model.getMsg1Value());
         }
         long endTime = System.currentTimeMillis();
@@ -288,12 +288,12 @@ public class CanIOHandlerTest {
     @SuppressWarnings("unused")
     @Test
     public void fieldToCanITest() {
-        CanIOHandler canIOHandler = manager.getCanIo("testDbc");
+        CanTrans canTrans = canCoder.getCanTransform("testDbc");
 
 
 
         // 使用数据，产生一个初始值
-        canIOHandler.receive_B(msg1_Id,data8_);
+        canTrans.deCode_B(msg1_Id,data8_);
         System.out.println("初始数据 model = "+ model.getMsg1Value());
         /* 初始数据：
          model = Msg1 = { <br>
@@ -314,7 +314,7 @@ public class CanIOHandlerTest {
             model.updateValue();
 
             // 现需要根据新的模型值，产生一个新的报文。
-            int[] canFrame = canIOHandler.outCanFrame_I(msg1_Id);
+            int[] canFrame = canTrans.enCode_I(msg1_Id);
 
             // 产生报文 = [11, 12, 13, 14, 217, 121, 194, 110] 正确
             // System.out.println("产生报文 = "+ Arrays.toString(canFrame));

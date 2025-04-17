@@ -5,7 +5,7 @@ import java.lang.reflect.Field;
 public class SignalIOService {
     private static final String ERR_INFO = "注解的字段类型出错，数据类型必须是 int,byte,short,float,double 中的一个";
     /**
-     * 设置字段值
+     * 通过反射的方式，将字段值写入到传入的模型中。
      * @param field 字段
      * @param model 对象
      * @param sigValue 要设置的值

@@ -12,10 +12,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * CAN收发器。<br>用于处理报文的收发,构造器传入一个DBC对象，本类就负责针对报文对该DBC进行修改。<br>
+ * CAN解编码器（执行者）。<br>用于处理报文的解码编码,构造器传入一个DBC对象，本类就负责针对报文对该DBC进行修改。<br>
  * 低耦合：此类只对 CanDbc 负责，不对其他类负责。由dbc类中的数据，解析报文，或者编码报文。
  */
-public class CanIOHandler {
+public class CanCoder {
     /** 持有一个 dbc 的 mspMap 。 用于执行报文的收发操作。*/
     protected final Map<Integer, CanMessage> msgMap;
     protected final CanDbc dbc ;
@@ -24,7 +24,7 @@ public class CanIOHandler {
      * 而不同报文，则用不同的锁来保证同步。不同报文因为是不同的数据，故可以多线程同时操作。
      * */
     protected Map<Integer,ReentrantLock> msgWriteLockMap ;
-    public CanIOHandler(CanDbc dbc){
+    public CanCoder(CanDbc dbc){
         // 传入一个DBC对象，用于后续修改
         this.dbc = dbc;
         this.dbcTag = dbc.dbcTag;
@@ -33,41 +33,12 @@ public class CanIOHandler {
     }
 
     /**
-     * 根据新的报文 ， 刷新数据模型的字段值<br>
-     * 8 --> 64 --> signal --> newModel
-     * @param canId canId
-     * @param data8 8字节的数组数据
-     * @param newModel 需要刷新的字段
-     */
-    public void updateObj_B(int canId, byte[] data8,Object newModel) {
-        CanMessage msg = msgMap.get(canId);
-        if (msg == null){
-            return;
-        }
-        // 8 -->64
-        byte[] data64 = MyByte.from8BytesTo64Bits(data8,MyByte.DataType.Intel);
-        // 64 --> signal ;
-        for (CanSignal signal : msg.getSignalMap().values()) {
-            // 获取值之后，调用方法将数据写入到一个新的模型中，实现数据的刷新。
-            double phyValue = bits64ToValue(data64, signal, signal.getStartBit(), signal.getBitLength(), signal.getFactor(), signal.getOffset());
-            // TODO  注意，此方法存在问题，通过id确定信号后，再刷新数据到模型中，字段是和 signal 绑定了，但是新的模型的绑定关系是不确定的。
-            //     * 模型中是否存在这个字段，需要验证。我在考虑要不要校验，因为校验会增加程序的运行时间。不正确的话或者干脆在写入的时候报错就好了。
-//            if (! signal.checkModelType(newModel)) {
-//                continue; // 校验，如果模型不正确就不写入
-//            }
-            signal.setFieldValue(phyValue,newModel) ;
-            /*提示（勿删）：实际上在运用过程中，确实有可能出现，一帧报文绑定多个模型的情况出现，这个时候，这个函数就不适用了，因为这个函数的作用就是用于输出单个数据模型。
-            * 况且在实际应用中，最好是细分DBC和数据模型，确保一个 canId 只输出一个模型，这样在运用到 LiveData 时，也会更方便。你也不想，多输入多输出吧，参数可变就太麻烦了。
-            *  */
-        }
-    }
-    /**
-     * 将接收到的CAN报文，解析后存入绑定好的数据模型中。<br>
+     * 接收数据，解码报文。 将接收到的CAN报文，解析后存入绑定好的数据模型中。<br>
      * 8 --> 64 --> signal --> field
      * @param canId 报文id
      * @param data8 8位数组的CAN报文,Byte数组格式。
      */
-    public void receive_B(int canId, byte[] data8) {
+    public void deCode_B(int canId, byte[] data8 ) {
         // 拿到id之后，需要到DBC文件中查询对应的对象。然后修改这个对象
         CanMessage msg = msgMap.get(canId);
         if (msg == null){
@@ -79,17 +50,17 @@ public class CanIOHandler {
             // 解析值
             double phyValue = bits64ToValue(data64, signal, signal.getStartBit(), signal.getBitLength(), signal.getFactor(), signal.getOffset());
             // 刷新值
-            signal.writeValue(phyValue) ;
+            signal.writeValue(phyValue) ; // 绑定的模型可能存在多个
         }
     }
 
     /**
-     * 将数据模型的字段，解析后得到一个CAN报文数组。<br>
+     * 编码数据，发送报文。将数据模型的字段，解析后得到一个CAN报文数组。<br>
      * field --> 64 --> 8
      * @param canId 报文id
      * @return 8位数组的CAN报文。int数组格式。
      */
-    public int[] outCanFrame_I(int canId) {
+    public int[] enCode_I(int canId) {
         CanMessage sendMsg = msgMap.get(canId);
         if (sendMsg == null){
             return new int[8]; // 传一个全是0的回去
@@ -103,11 +74,11 @@ public class CanIOHandler {
     }
 
     /**
-     * 在写入字段的时候，加锁写入。
+     * 在写入字段（解码报文）的时候，加锁写入。
      * @param canId 报文id
      * @param data8 8位数组的CAN报文
      */
-    public void syncReceive_B(int canId, byte[] data8) {
+    public void syncDeCode_B(int canId, byte[] data8) {
         // 拿到id之后，需要到DBC文件中查询对应的对象。然后修改这个对象
         CanMessage msg = msgMap.get(canId);
         if (msg == null) {
@@ -132,12 +103,7 @@ public class CanIOHandler {
      * 获取一个锁，该锁锁住了单个报文的操作，不同报文则是不同的锁。
      */
     public ReentrantLock getLock(int canId) {
-        ReentrantLock lock = msgWriteLockMap.get(canId);
-        if (lock == null) {
-            lock = new ReentrantLock();
-            msgWriteLockMap.put(canId,lock);
-        }
-        return lock;
+        return msgWriteLockMap.putIfAbsent(canId,new ReentrantLock());
     }
 
     /**
@@ -185,7 +151,7 @@ public class CanIOHandler {
     }
     /**
      * 输入一个int数，根据有效范围长度，检查是否全为1 。<br>
-     * 例如，如果输入 15（在二进制中是 1111），并且我们计算的是 4 位二进制，那么它是全 1。但如果考虑 5 位（比如 01111），则不是全 1。<br>
+     * 例如，如果输入 15（在二进制中是 1111），并且我们计算的是 4 位二进制，那么它是全为 1。但如果考虑 5 位（比如 01111），则不是全 1。<br>
      * @param number 输入一个整型数
      * @param bitLength 该整型数的有效长度
      * @return 返回是否全为1,
@@ -194,8 +160,8 @@ public class CanIOHandler {
         // 构造一个掩码，掩码的长度等于 bitLength，且所有位均为 1
         int mask = (1 << bitLength) - 1;
 
-        // 比较 number 和掩码，如果 number 与掩码的按位与结果等于掩码，说明 number 的有效位都是 1
-        // 按位与 运算。同时为1才为1，否则为0 。
+        // 比较 number 和掩码，如果 number 与掩码的按位 与结果等于掩码，说明 number 的有效位都是 1
+        // 按位 与 运算。同时为1才为1，否则为0 。
         return (number & mask) == mask;
     }
 
@@ -230,14 +196,21 @@ public class CanIOHandler {
     }
     /** 转换不同的英特尔格式 */
     public static MyByte.DataType transOrder(CANByteOrder instanceByteOrder) {
-        MyByte.DataType inputType ;
         if (instanceByteOrder == CANByteOrder.Intel){
-            inputType = MyByte.DataType.Intel;
+            return MyByte.DataType.Intel;
         }
         else {
-            inputType = MyByte.DataType.Motorola;
+            return MyByte.DataType.Motorola;
         }
-        return inputType;
+    }
+    @SuppressWarnings("unused")
+    public static CANByteOrder transOrder(MyByte.DataType instanceByteOrder) {
+        if (instanceByteOrder == MyByte.DataType.Intel){
+            return CANByteOrder.Intel;
+        }
+        else {
+            return CANByteOrder.Motorola_LSB;
+        }
     }
 
     /* 以下函数 均被弃用。因为每次解析报文实际上是每次的计算量很小，只有64bit的计算量。
@@ -245,9 +218,39 @@ public class CanIOHandler {
     * 同时，因为任务次数很多，线程会频繁的切换，导致性能下降。
     *
     * 经过测试：采用了并发流来处理报文时，一千帧报文，平均耗时200毫秒。而采用单线程，一千帧，不采用并发流的平均耗时是10毫秒。
-    * 可见，过早的优化确实是罪恶之源。当线程切分得太小时，反而不适合使用多线程进行处理；采用单线程反而可以提高效率。
+    * 可见，过早地优化确实是罪恶之源。当线程切分得太小时，反而不适合使用多线程进行处理；采用单线程反而可以提高效率。
     * 线程划分的颗粒度，还是需要实际测试了之后，才能知晓结果。
     *  */
+    /**
+     * 根据新的报文 ， 刷新数据模型的字段值<br>
+     * 8 --> 64 --> signal --> newModel
+     * @param canId canId
+     * @param data8 8 字节的数组数据
+     * @param newModel 需要刷新的字段
+     */
+    @Deprecated
+    public void updateObj_B(int canId, byte[] data8,Object newModel) {
+        CanMessage msg = msgMap.get(canId);
+        if (msg == null){
+            return;
+        }
+        // 8 -->64
+        byte[] data64 = MyByte.from8BytesTo64Bits(data8,MyByte.DataType.Intel);
+        // 64 --> signal ;
+        for (CanSignal signal : msg.getSignalMap().values()) {
+            // 获取值之后，调用方法将数据写入到一个新的模型中，实现数据的刷新。
+            double phyValue = bits64ToValue(data64, signal, signal.getStartBit(), signal.getBitLength(), signal.getFactor(), signal.getOffset());
+            // TODO  注意，此方法存在问题，通过id确定信号后，再刷新数据到模型中，字段是和 signal 绑定了，但是新的模型是否正确是不确定的。
+            //     * 模型中是否存在这个字段，需要验证。我在考虑要不要校验，因为校验会增加程序的运行时间。不正确的话或者干脆在写入的时候报错就好了。
+//            if (! signal.checkModelType(newModel)) {
+//                continue; // 校验，如果模型不正确就不写入
+//            }
+            signal.setFieldValue(phyValue,newModel) ; // 通过反射的方式，将字段值写入到传入的模型中。
+            /*提示（勿删）：实际上在运用过程中，确实有可能出现，一帧报文绑定多个模型的情况出现，这个时候，这个函数就不适用了，因为这个函数的作用就是用于输出单个数据模型。
+             * 况且在实际应用中，最好是细分DBC和数据模型，确保一个 canId 只输出一个模型，这样在运用到 LiveData 时，也会更方便。你也不想，多输入多输出吧，参数可变就太麻烦了。
+             *  */
+        }
+    }
     @Deprecated
     public void concurrentCanToField(int canId, byte[] data8){
         concurrentCanDataToDbc(canId, data8);

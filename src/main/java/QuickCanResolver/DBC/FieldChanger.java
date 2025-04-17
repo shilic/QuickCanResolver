@@ -2,7 +2,7 @@ package QuickCanResolver.DBC;
 
 import java.lang.reflect.Field;
 
-public class SignalIOService {
+public class FieldChanger {
     private static final String ERR_INFO = "注解的字段类型出错，数据类型必须是 int,byte,short,float,double 中的一个";
     /**
      * 通过反射的方式，将字段值写入到传入的模型中。

@@ -1,6 +1,7 @@
 import Demo.CarDataModel;
-import QuickCanResolver.CanHandle.CanFrameData;
-import QuickCanResolver.CanHandle.CanObjectMapManager;
+import Demo.ExampleDataModel3;
+import QuickCanResolver.Core.CanFrameData;
+import QuickCanResolver.Core.CanManager;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -61,10 +62,10 @@ public class BindDbcTest {
         System.out.println("test1");
         int num = 10 ;
         // 1 获取一个管理器
-        CanObjectMapManager manager = CanObjectMapManager.getInstance();
+        CanManager canManager = CanManager.getInstance();
 
         // 2 通过管理器，实例化当前的模型,内部完成绑定操作
-        CarDataModel model = manager.bind(CarDataModel.class);
+        CarDataModel model = canManager.bind(CarDataModel.class);
 
         long startTime = System.currentTimeMillis();
         for (int i = 0 ; i < num ; i++){
@@ -73,7 +74,7 @@ public class BindDbcTest {
             byte[] data = canFrameData.getBytes8();
 
             // 使用时，只需要一行代码即可更新数据到绑定的 model 中
-            manager.receive_B(canId,data);
+            canManager.deCode_B(canId,data);
 
             System.out.println("model = "+ model.getMsg1Value());
         }
@@ -96,12 +97,13 @@ public class BindDbcTest {
         int num = 10;
 
         // 1 获取一个管理器
-        CanObjectMapManager manager = CanObjectMapManager.getInstance() ;
+        CanManager canManager = CanManager.getInstance() ;
         // 2 通过管理器，实例化当前的模型,内部完成绑定操作
-        CarDataModel oldModel = manager.bind(CarDataModel.class) ;
+        CarDataModel oldModel = canManager.bind(CarDataModel.class);
+        ExampleDataModel3 model3 = canManager.bind(ExampleDataModel3.class);
 
         // 初始化数据，也可以不初始化
-        manager.receive_B(msg1_Id,data8_);
+        canManager.deCode_B(msg1_Id,data8_);
         System.out.println("oldModel Value = " + oldModel.getMsg1Value());  //打印值
         /* 初始化数据打印如下
          * oldModel Value =
@@ -120,7 +122,11 @@ public class BindDbcTest {
         long startTime = System.currentTimeMillis();
         for (int i = 0 ; i < num ; i++) {
             // 用新数据和旧的模型生成一个新的模型
-            CarDataModel newModel = manager.createNewModel(msg1_Id,data8_2,oldModel);
+            //CarDataModel newModel = canCoder.createNewModel(msg1_Id,data8_2,oldModel);
+            canManager.deCode_B(msg1_Id,data8_2);
+            CarDataModel newModel = canManager.createNewModel(CarDataModel.class);
+            // 多个数据模型也是可以的
+            ExampleDataModel3 model3new = canManager.createNewModel(ExampleDataModel3.class);
 
             System.out.println("newModel Value = "+ newModel.getMsg1Value());
             /* 更新数据打印如下
@@ -134,7 +140,7 @@ public class BindDbcTest {
              * msg1_sig7 = -80.5,
              * msg1_sig8 = 110.0}
              */
-            //System.out.println("newModel  = " + newModel);
+            System.out.println("newModel  = " + newModel);
             // 打印 新对象 的 hash 码 Demo.CarDataModel@7276c8cd
             // 可见，对象的hash码发生了变化，数据得到了更新
         }

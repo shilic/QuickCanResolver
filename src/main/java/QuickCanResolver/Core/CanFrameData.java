@@ -1,4 +1,4 @@
-package QuickCanResolver.CanHandle;
+package QuickCanResolver.Core;
 
 /**
  * CAN数据类，将报文ID和数据封装成一个整体。数据是只读

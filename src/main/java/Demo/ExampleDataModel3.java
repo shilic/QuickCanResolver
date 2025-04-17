@@ -1,8 +1,13 @@
 package Demo;
 
-import QuickCanResolver.CanHandle.CanBinding;
+import QuickCanResolver.Core.CanBinding;
+import QuickCanResolver.Core.CanCopyable;
+import QuickCanResolver.Core.DbcBinding;
 
-public class ExampleDataModel3 {
+@DbcBinding({
+        @DbcBinding.Dbc(dbcTag = DemoExample1.TEST_DBC, dbcPath = DemoExample1.DBC_PATH),
+})
+public class ExampleDataModel3  implements CanCopyable<ExampleDataModel3>, Cloneable {
     @CanBinding(signalTag = "msg6_sig1")
     int msg6_sig1;
     @CanBinding(signalTag = "msg6_sig2")
@@ -19,4 +24,18 @@ public class ExampleDataModel3 {
     int msg6_sig7;
     @CanBinding(signalTag = "msg6_sig8")
     int msg6_sig8;
+
+    @Override
+    public ExampleDataModel3 copyNew() {
+        return clone();
+    }
+
+    @Override
+    public ExampleDataModel3 clone() {
+        try {
+            return (ExampleDataModel3) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException("克隆失败", e);
+        }
+    }
 }

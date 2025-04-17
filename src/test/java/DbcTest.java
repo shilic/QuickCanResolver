@@ -1,5 +1,5 @@
-import QuickCanResolver.CanHandle.CanIOHandler;
-import QuickCanResolver.CanHandle.DbcParse;
+import QuickCanResolver.Core.CanCoder;
+import QuickCanResolver.Core.DbcParse;
 import QuickCanResolver.DBC.CanDbc;
 import QuickCanResolver.DBC.CanSignal;
 import org.junit.Test;
@@ -23,10 +23,10 @@ public class DbcTest {
             exception.printStackTrace();
         }
         assert dbc != null;
-        CanIOHandler canIOHandler = new CanIOHandler(dbc);
+        CanCoder canCoder = new CanCoder(dbc);
         id = 0x1898_2418;
         byte[] data8 = new byte[]{10, 3, (byte) 143, 0, 0, 0, 0, 0}; // {20,55, (byte) 0b1000_1111,55,55,55,55,55}
-        canIOHandler.concurrentCanDataToDbc(id,data8);
+        canCoder.concurrentCanDataToDbc(id,data8);
         System.out.println("接收报文 Msg = "+dbc.getMsg(id).getMsgValue());
         /*  测试数据： byte[] data8 = new byte[]{10,3, (byte) 0b10001000,55,55,55,55,55};
         * 测试结果：
@@ -37,7 +37,7 @@ public class DbcTest {
         信号 : test_Signal_14 = -5.55;
         信号 : CCSToCabin1_FanGearReq = 15.0;
         *  */
-        int[] ints = canIOHandler.concurrentDbcToCanData(id);
+        int[] ints = canCoder.concurrentDbcToCanData(id);
         System.out.println("发送报文 = "+ Arrays.toString(ints));
         // 至此，报文的接收和发送均无问题。
     }

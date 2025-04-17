@@ -1,4 +1,4 @@
-package QuickCanResolver.CanHandle;
+package QuickCanResolver.Core;
 
 /** CAN输出服务 */
 public interface CanOutputService {

@@ -1,4 +1,4 @@
-package QuickCanResolver.CanHandle;
+package QuickCanResolver.Core;
 
 import QuickCanResolver.DBC.FieldChanger;
 import QuickCanResolver.DBC.CanSignal;

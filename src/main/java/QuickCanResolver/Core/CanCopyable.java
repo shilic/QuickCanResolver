@@ -1,4 +1,4 @@
-package QuickCanResolver.CanHandle;
+package QuickCanResolver.Core;
 
 /* 为什么选择自定义拷贝接口的方式？
  * 1. 刷新的字段不确定。

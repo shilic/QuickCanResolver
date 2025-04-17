@@ -62,7 +62,10 @@ public class CanSignal {
     protected final Set<String> sigReceiveNodeSet ;
     /** 用于标记该信号属于哪个数据模型 */
     protected  Object dataModel;
-    /** 用于标记属于哪个字段 。如果 */
+    /** 标记数据模型的类型 */
+    @Deprecated
+    protected Class<?> dataModelClass;
+    /** 用于标记属于哪个字段 。 */
     protected Field field ;
 
     /**
@@ -73,11 +76,11 @@ public class CanSignal {
         return field != null;
     }
     /**
-     * 设置字段的值 。 建议先调用 isFieldBind()。查询是否有绑定字段
+     * 设置字段的值到绑定的模型中 。
      * @param sigValue 信号值
      */
-    public void writeValue(double sigValue) {
-        setFieldValue(sigValue);
+    public Object writeValue(double sigValue) {
+        return setFieldValue(sigValue);
     }
 
     /**
@@ -87,27 +90,32 @@ public class CanSignal {
     public double readValue() {
         return getFieldValue() ;
     }
-
-    protected boolean setFieldValue(double sigValue) {
-        if (! isFieldBind()) { // 如果这个信号没有绑定字段，则不写入值
-            return false;
+    /**
+     * 通过反射的方式，将字段值写入到传入的模型中。
+     */
+    private Object setFieldValue(double sigValue) {
+        if ( isFieldBind()) { // 如果这个信号没有绑定字段，则不写入值
+            FieldChanger.setFieldValue(field, dataModel, sigValue); // 使用反射，给字段赋值
+            return dataModel;
         }
-        SignalIOService.setFieldValue(field, dataModel, sigValue); // 使用反射，给字段赋值
-        return true;
+        // 如果该信号没有绑定字段，那么 dataModel 和 field 自然就为空，也就会空指针异常。
+        return null;
     }
+    /** 通过反射的方式，将字段值写入到传入的模型中。 */
+    @Deprecated
     public boolean setFieldValue(double sigValue,Object newModel) {
         if (! isFieldBind()) { // 如果这个信号没有绑定字段，则不写入值
             return false;
         }
-        SignalIOService.setFieldValue(field, newModel, sigValue);
+        FieldChanger.setFieldValue(field, newModel, sigValue);
         return true;
     }
 
-    protected double getFieldValue() {
+    private double getFieldValue() {
         if (! isFieldBind()) { // 如果这个信号没有绑定字段
             return 0;
         }
-        return SignalIOService.getFieldValue(field, dataModel); // 获取绑定的字段中当前的旧值
+        return FieldChanger.getFieldValue(field, dataModel); // 获取绑定的字段中当前的旧值
     }
     public boolean checkModelType(Object newObj) {
         Class<?> currentClazz = dataModel.getClass();

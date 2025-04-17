@@ -1,7 +1,7 @@
 import Demo.CarDataModel;
-import QuickCanResolver.CanHandle.CanFrameData;
-import QuickCanResolver.CanHandle.CanTrans;
-import QuickCanResolver.CanHandle.CanCoder;
+import QuickCanResolver.Core.CanCoder;
+import QuickCanResolver.Core.CanFrameData;
+import QuickCanResolver.Core.CanManager;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class CanTransTest {
+public class CanCoderTest {
     static int num = 100000;
     static final int loopTime = 100000;
     static final int msg1_Id = 0x18AB_AB01 ; // message1
@@ -37,17 +37,17 @@ public class CanTransTest {
 
 
     CarDataModel model = new CarDataModel();
-    CanCoder canCoder = CanCoder.getInstance();
+    CanManager canManager = CanManager.getInstance();
     List<CanFrameData> canFrameDataList;
     List<CanFrameData> canFrameDataList2;
     long bindTimeCost;
     {
         /* 手动绑定存在很多问题，故也准备把这一部分优化了 */
-        canCoder.addDbcToMap("testDbc",path1); // 绑定DBC文件
-        canCoder.addDbcToMap("testDbc2",path2); // 绑定DBC文件
+        canManager.addDbcToMap("testDbc",path1); // 绑定DBC文件
+        canManager.addDbcToMap("testDbc2",path2); // 绑定DBC文件
 
         long startTime = System.currentTimeMillis();
-        canCoder.bindModelAndField(model.getClass(),model); // 绑定数据模型
+        canManager.bindModelAndField(model.getClass(),model); // 绑定数据模型
         long endTime = System.currentTimeMillis();
         bindTimeCost = endTime - startTime;
         //System.out.println("绑定耗时 : " + bindTimeCost+" 毫秒");
@@ -97,11 +97,11 @@ public class CanTransTest {
     @SuppressWarnings("deprecation")
     @Test
     public void concurrentTest(){
-        CanTrans canTrans = canCoder.getCanTransform("testDbc");
+        CanCoder canCoder = canManager.getCanCoder("testDbc");
         long startTime = System.currentTimeMillis();
         for (int i = 0 ;i<num ;i++){
             // 以下代码用于测试报文的  接收
-            canTrans.concurrentCanToField(msg1_Id,data8_);
+            canCoder.concurrentCanToField(msg1_Id,data8_);
             //System.out.println("model = "+ model.getMsg1Value());
         }
         long endTime = System.currentTimeMillis();
@@ -114,11 +114,11 @@ public class CanTransTest {
      */
     @Test
     public void singleThreadTest(){
-        CanTrans canTrans = canCoder.getCanTransform("testDbc");
+        CanCoder canCoder = canManager.getCanCoder("testDbc");
         long startTime = System.currentTimeMillis();
         for (int i = 0 ;i<num ;i++){
             // 以下代码用于测试报文的  接收
-            canTrans.deCode_B(msg1_Id,data8_);
+            canCoder.deCode_B(msg1_Id,data8_);
             //System.out.println("model = "+ model.getMsg1Value());
         }
         long endTime = System.currentTimeMillis();
@@ -130,10 +130,10 @@ public class CanTransTest {
      */
     @Test
     public void syncTest(){
-        CanTrans canTrans = canCoder.getCanTransform("testDbc");
+        CanCoder canCoder = canManager.getCanCoder("testDbc");
         long startTime = System.currentTimeMillis();
         for (int i = 0 ;i<num ;i++){
-            canTrans.syncDeCode_B(msg1_Id,data8_);
+            canCoder.syncDeCode_B(msg1_Id,data8_);
             //System.out.println("model = "+ model.getMsg1Value());
         }
         long endTime = System.currentTimeMillis();
@@ -146,7 +146,7 @@ public class CanTransTest {
      */
     @Test
     public void poolTest(){
-        CanTrans canTrans = canCoder.getCanTransform("testDbc");
+        CanCoder canCoder = canManager.getCanCoder("testDbc");
 
         long startTime = System.currentTimeMillis();
 
@@ -156,12 +156,12 @@ public class CanTransTest {
         for (CanFrameData canFrameData : canFrameDataList){
             int canId = canFrameData.getMsgId();
             byte[] data = canFrameData.getBytes8();
-            ReentrantLock lock = canTrans.getLock(canId);
+            ReentrantLock lock = canCoder.getLock(canId);
             executor.submit(() -> {
                 lock.lock();
                 try {
                     //System.out.println("Task " + MyByte.hex2Str(canId) + " is running on " + Thread.currentThread().getName());
-                    canTrans.deCode_B(canId,data);
+                    canCoder.deCode_B(canId,data);
                     Thread.sleep(1000);
                 }catch (Exception e){
                     e.printStackTrace();
@@ -202,7 +202,7 @@ public class CanTransTest {
      */
     @Test
     public void poolTest2() {
-        CanTrans canTrans = canCoder.getCanTransform("testDbc");
+        CanCoder canCoder = canManager.getCanCoder("testDbc");
 
         long startTime = System.currentTimeMillis();
 
@@ -229,12 +229,12 @@ public class CanTransTest {
                     break;
             }
 
-            ReentrantLock lock = canTrans.getLock(canId);
+            ReentrantLock lock = canCoder.getLock(canId);
             executor.submit(() -> {
                 lock.lock();
                 try {
                     //System.out.println("Task " + MyByte.hex2Str(canId) + " is running on " + Thread.currentThread().getName());
-                    canTrans.deCode_B(canId,data);
+                    canCoder.deCode_B(canId,data);
                     //Thread.sleep(1000);
                 }catch (Exception e){
                     e.printStackTrace();
@@ -260,7 +260,7 @@ public class CanTransTest {
      */
     @Test
     public void singleThreadTest2(){
-        CanTrans canTrans = canCoder.getCanTransform("testDbc");
+        CanCoder canCoder = canManager.getCanCoder("testDbc");
 
         int num = 10;
 
@@ -269,7 +269,7 @@ public class CanTransTest {
             CanFrameData canFrameData = getRandomData();
             int canId = canFrameData.getMsgId();
             byte[] data = canFrameData.getBytes8();
-            canTrans.deCode_B(canId,data);
+            canCoder.deCode_B(canId,data);
             System.out.println("model = "+ model.getMsg1Value());
         }
         long endTime = System.currentTimeMillis();
@@ -288,12 +288,12 @@ public class CanTransTest {
     @SuppressWarnings("unused")
     @Test
     public void fieldToCanITest() {
-        CanTrans canTrans = canCoder.getCanTransform("testDbc");
+        CanCoder canCoder = canManager.getCanCoder("testDbc");
 
 
 
         // 使用数据，产生一个初始值
-        canTrans.deCode_B(msg1_Id,data8_);
+        canCoder.deCode_B(msg1_Id,data8_);
         System.out.println("初始数据 model = "+ model.getMsg1Value());
         /* 初始数据：
          model = Msg1 = { <br>
@@ -314,7 +314,7 @@ public class CanTransTest {
             model.updateValue();
 
             // 现需要根据新的模型值，产生一个新的报文。
-            int[] canFrame = canTrans.enCode_I(msg1_Id);
+            int[] canFrame = canCoder.enCode_I(msg1_Id);
 
             // 产生报文 = [11, 12, 13, 14, 217, 121, 194, 110] 正确
             // System.out.println("产生报文 = "+ Arrays.toString(canFrame));

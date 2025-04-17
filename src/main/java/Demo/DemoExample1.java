@@ -2,7 +2,7 @@ package Demo;
 
 import QuickCanResolver.Core.CanManager;
 
-public class Demo1 extends MyActivity {
+public class DemoExample1 extends MyActivity {
     public static final String TEST_DBC = "testDbc";
     public static final String TEST_DBC2 = "testDbc2";
 
@@ -16,7 +16,7 @@ public class Demo1 extends MyActivity {
     static byte[] data8_ = new byte[]{30, 29, 28, 20, (byte) 211, 121, (byte) 200, 100};
     static byte[] data8_2 = new byte[]{7, 8, 9, 10, (byte) 211, 121, (byte) 200, 100};
 
-    McuCan mcuCan ;
+    McuCanExample mcuCanExample;
 
     @Override
     public void onCreate() {
@@ -26,10 +26,10 @@ public class Demo1 extends MyActivity {
         // 2 通过管理器，实例化当前的模型,内部完成绑定操作
         CarDataModel oldModel = canManager.bind(CarDataModel.class);
 
-        Demo1 demo1 = new Demo1();
+        DemoExample1 demoExample1 = new DemoExample1();
         // 新建一个第三方组件。
-        demo1.mcuCan = McuCan.getInstance(); // 第三方组件
-        demo1.mcuCan.registerCanListener(new McuCan.CanListener() {
+        demoExample1.mcuCanExample = McuCanExample.getInstance(); // 第三方组件
+        demoExample1.mcuCanExample.registerCanListener(new McuCanExample.CanListener() {
             @Override
             public void onStatus(int canId, byte[] data8) {
                 // 解耦：传入解析函数，每次来数据的时候，实现自动解析
@@ -45,6 +45,6 @@ public class Demo1 extends MyActivity {
     public void event1() {
         // TODO:这里仍然存在耦合
         // 模拟数据发送
-        mcuCan.sendCanData(123,null);
+        mcuCanExample.sendCanData(123,null);
     }
 }

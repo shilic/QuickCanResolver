@@ -2,11 +2,10 @@ package Demo;
 
 import QuickCanResolver.Core.CanManager;
 import QuickCanResolver.Core.CanOutputService;
-import QuickCanResolver.Core.McuAdapter;
 
 import java.lang.ref.WeakReference;
 
-public class Demo2 extends MyActivity {
+public class DemoExample2 extends MyActivity {
     public static final String TEST_DBC = "testDbc";
     public static final String TEST_DBC2 = "testDbc2";
 
@@ -26,27 +25,27 @@ public class Demo2 extends MyActivity {
     // 2 通过管理器，实例化当前的模型,内部完成绑定操作
     CarDataModel oldModel = canManager.bind(CarDataModel.class);
     MyHandler myHandler = new HandlerImp(this);
-    CanOutputService out = new McuAdapter(canManager,myHandler);
+    CanOutputService service = new McuAdapterExample(canManager,myHandler);
     @Override
     public void onCreate() {
-        System.out.println("你好，这里是demo1");
-        CarDataModel newModel = canManager.createNewModel(CarDataModel.class);
+        System.out.println("这里是demo2");
     }
     // 于是，相比于 Demo1 这里需要再多处一个中间层，用于解耦数据的实际收发和解析。
 
     /** 这里模拟一个点击事件，点击后触发报文发送。由于这里完成了解耦，故实际的执行器发生变动时，这里的代码并不需要变动。 */
     public void clickEvent() {
         // 调用服务，完成模拟数据发送
-        out.onOutput(msg1_Id,canManager.enCode_I(msg1_Id));
+        service.send(msg1_Id,canManager.enCode_I(msg1_Id));
+        CarDataModel newModel = canManager.createNewModel(CarDataModel.class);
     }
     public static class HandlerImp extends MyHandler{
-        WeakReference<Demo2> ref ;
-        public HandlerImp(Demo2 myActivity){
+        WeakReference<DemoExample2> ref ;
+        public HandlerImp(DemoExample2 myActivity){
             ref = new WeakReference<>(myActivity) ;
         }
         @Override
         public void handleMessage() {
-            Demo2 activity = ref.get();
+            DemoExample2 activity = ref.get();
             // 在这里接收 子线程 发来的事件请求，并处理，例如更新界面，发送报文等操作。
             activity.clickEvent();
         }

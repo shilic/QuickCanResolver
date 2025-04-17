@@ -1,7 +1,7 @@
 package Demo;
 
 
-import QuickCanResolver.CanHandle.CanBinding;
+import QuickCanResolver.Core.CanBinding;
 
 /**
  * CAN报文数据模型类，用于描述车身数据，例如车速、门状态、车窗状态、空调状态等。该类仅作示范作用。使用注解和反射获取该类中的字段，进行绑定。

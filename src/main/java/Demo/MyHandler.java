@@ -1,4 +1,8 @@
 package Demo;
 
-public class MyHandler {
+public abstract class MyHandler {
+    public void sendMessage(){
+
+    }
+    public abstract void handleMessage();
 }

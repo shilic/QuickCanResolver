@@ -11,10 +11,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class CanManager {
+public class CanManagerImp implements CanManagerService {
     protected Map<String, CanDbc> dbcMap;
     protected Map<String, CanCoder> canCoderMap;
-    protected static volatile CanManager canManager;
+    protected static volatile CanManagerImp canManagerImp;
     protected Map<Class<?>,Object> modelMap ;
 
 
@@ -23,6 +23,7 @@ public class CanManager {
      * 已经封装好所有步骤，供外部直接调用。
      * @param clazz 数据模型Class
      */
+
     public <T extends CanCopyable<T>> T bind(Class<T> clazz) {
         // 获取类上的注解
         if (! clazz.isAnnotationPresent(DbcBinding.class)) {
@@ -63,6 +64,7 @@ public class CanManager {
         }
     }
     // 新增一个方法，返回绑定的模型。当多个模型和多个报文进行绑定时，接收一个报文可能返回多个数据模型。故需要单独做一个接收
+
     public <T extends CanCopyable<T>> T getModel(Class<T> clazz) {
         return (T) modelMap.get(clazz); // 如果没有查询到，那么会返回空
     }
@@ -85,6 +87,7 @@ public class CanManager {
      * 使用新的数据，拷贝一个新的数据对象出来。<br> 用于提供给 LiveData 和 viewModel。<br>
      * @return 新的对象。
      */
+
     public  <T extends CanCopyable<T>> T createNewModel(Class<T> clazz) {
         T oldDataModel = getModel(clazz);
         // 拷贝一个新的对象。
@@ -94,6 +97,7 @@ public class CanManager {
     /**
      * 封装  deCode_B() 方法。接收数据，解码报文。 将接收到的CAN报文，解析后存入绑定好的数据模型中
      */
+
     public void deCode_B(int canId, byte[] data8) {
         // 根据 canId 确定要写入哪一个 DBC
         String dbcTag = findDbcTagByCanId(canId);
@@ -106,6 +110,7 @@ public class CanManager {
     /**
      * 封装  enCode_I() 方法。编码数据，发送报文。
      */
+
     public int[] enCode_I(int canId) {
         // 根据 canId 确定要写入哪一个 DBC
         String dbcTag = findDbcTagByCanId(canId);
@@ -251,17 +256,17 @@ public class CanManager {
      * 使用单例模式获取一个 “CAN对象映射管理器”
      * @return “CAN对象映射管理器”
      */
-    public static CanManager getInstance() {
-        if (canManager == null){
-            synchronized (CanManager.class){
-                if (canManager == null){
-                    return canManager = new CanManager();
+    public static CanManagerImp getInstance() {
+        if (canManagerImp == null){
+            synchronized (CanManagerImp.class){
+                if (canManagerImp == null){
+                    return canManagerImp = new CanManagerImp();
                 }
             }
         }
-        return canManager;
+        return canManagerImp;
     }
-    private CanManager() {
+    private CanManagerImp() {
         dbcMap = new ConcurrentHashMap<>();
         canCoderMap = new ConcurrentHashMap<>();
         modelMap = new ConcurrentHashMap<>();
@@ -271,6 +276,7 @@ public class CanManager {
      * 取消注册DBC
      * @param dbcTag  对应的DBC标签
      */
+
     public void clearDBC(String dbcTag){
         dbcMap.remove(dbcTag);
     }
@@ -278,6 +284,7 @@ public class CanManager {
     /**
      * 取消所有DBC的注册
      */
+
     public void clearAllDbc(){
         dbcMap.clear();
     }
@@ -285,6 +292,7 @@ public class CanManager {
     /**
      * 清理指定 CanCoder(编解码器)
      */
+
     public void clearCanCoder(String dbcTag){
         canCoderMap.remove(dbcTag);
     }
@@ -299,6 +307,7 @@ public class CanManager {
     /**
      * 清理所有注册项
      */
+
     public void clear() {
         clearAllCanCoder();
         clearAllDbc();

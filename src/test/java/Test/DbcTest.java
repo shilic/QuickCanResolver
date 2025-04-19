@@ -1,3 +1,5 @@
+package Test;
+
 import QuickCanResolver.Core.CanCoder;
 import QuickCanResolver.Core.DbcParse;
 import QuickCanResolver.DBC.CanDbc;

@@ -7,12 +7,12 @@ import QuickCanResolver.Core.CanSendService;
  * 将第三方组件彻底的从业务逻辑组件 Demo2 中解耦出来。由于不同的第三方组件，实现的回调函数可能不一样，所以就需要创建新的适配器。
  * TODO ：这里的代码只是一个示例。
  */
-public class McuAdapterExample implements CanSendService, McuCan.CanListener {
+public class McuAdapter0 implements CanSendService, McuCan.CanListener {
     McuCan mcuCan = McuCan.getInstance();
     CanManagerImp canManagerImp;// 第三方组件
     MyHandler myHandler;
 
-    public McuAdapterExample(CanManagerImp canManagerImp, MyHandler myHandler) {
+    public McuAdapter0(CanManagerImp canManagerImp, MyHandler myHandler) {
         mcuCan.registerCanListener(this);
         this.canManagerImp = canManagerImp;
         this.myHandler = myHandler;

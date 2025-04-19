@@ -1,11 +1,11 @@
 package Demo;
 
 import QuickCanResolver.Core.CanManagerImp;
-import QuickCanResolver.Core.CanOutputService;
+import QuickCanResolver.Core.CanSendService;
 
 import java.lang.ref.WeakReference;
 
-public class DemoExample2 extends MyActivity {
+public class Demo2 extends MyActivity {
     public static final String TEST_DBC = "testDbc";
     public static final String TEST_DBC2 = "testDbc2";
 
@@ -25,7 +25,7 @@ public class DemoExample2 extends MyActivity {
     // 2 通过管理器，实例化当前的模型,内部完成绑定操作
     CarDataModel oldModel = canManagerImp.bind(CarDataModel.class);
     MyHandler myHandler = new HandlerImp(this);
-    CanOutputService service = new McuAdapterExample(canManagerImp,myHandler);
+    CanSendService service = new McuAdapter0(canManagerImp,myHandler);
     // 这里可以更进一步解耦，把 CanManager 和 service 组装在一起，解耦主活动。
     @Override
     public void onCreate() {
@@ -40,13 +40,13 @@ public class DemoExample2 extends MyActivity {
         CarDataModel newModel = canManagerImp.createNewModel(CarDataModel.class);
     }
     public static class HandlerImp extends MyHandler{
-        WeakReference<DemoExample2> ref ;
-        public HandlerImp(DemoExample2 myActivity){
+        WeakReference<Demo2> ref ;
+        public HandlerImp(Demo2 myActivity){
             ref = new WeakReference<>(myActivity) ;
         }
         @Override
         public void handleMessage() {
-            DemoExample2 activity = ref.get();
+            Demo2 activity = ref.get();
             // 在这里接收 子线程 发来的事件请求，并处理，例如更新界面，发送报文等操作。
             activity.clickEvent();
         }

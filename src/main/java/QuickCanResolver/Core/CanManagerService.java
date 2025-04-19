@@ -1,6 +1,6 @@
 package QuickCanResolver.Core;
 
-public interface CanManagerI {
+public interface CanManagerService {
     /**框架最主要方法 ： 绑定 dbc <br>
      * 使用注解，直接绑定dbc和数据模型，省略手动调用的步骤。<br>
      * 已经封装好所有步骤，供外部直接调用。
@@ -16,7 +16,6 @@ public interface CanManagerI {
      * @return 新的对象。
      */
     <T extends CanCopyable<T>> T createNewModel(Class<T> clazz);
-
     /**
      * 接收数据，解码报文。 将接收到的CAN报文，解析后存入绑定好的数据模型中
      */
@@ -25,8 +24,8 @@ public interface CanManagerI {
      * 编码数据，发送报文。
      */
     int[] enCode_I(int canId);
-    /** 接口的实现必须自己实现单例模式 。 */
-    CanManagerI getInstance();
+
+
 
     /**
      * 取消注册DBC
@@ -37,4 +36,19 @@ public interface CanManagerI {
      * 取消所有DBC的注册
      */
     void clearAllDbc();
+    /**
+     * 清理指定 CanCoder(编解码器)
+     */
+    void clearCanCoder(String dbcTag);
+    /**
+     * 清理所有 CanCoder(编解码器)
+     */
+    void clearAllCanCoder();
+    /**
+     * 清理所有注册项
+     */
+    default void clear() {
+        clearAllCanCoder();
+        clearAllDbc();
+    }
 }

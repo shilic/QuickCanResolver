@@ -1,3 +1,5 @@
+package Test;
+
 import QuickCanResolver.CanTool.MyByte;
 import org.junit.Test;
 

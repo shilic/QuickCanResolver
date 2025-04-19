@@ -1,3 +1,5 @@
+package Test;
+
 import Demo.CarDataModel;
 import org.junit.Test;
 

@@ -1,5 +1,5 @@
 package QuickCanResolver.Core;
 
-public interface CanInputService {
-    void onListen(int canId, byte[] data8);
+public interface CanListenService {
+    void listened(int canId, byte[] data8);
 }

@@ -3,11 +3,12 @@ package Demo;
 
 // 第三方组件无法改动，所以需要做适配。
 // 模拟第三方组件，用于模拟实车上的CAN收发。
-public class McuCanExample {
-    public static McuCanExample getInstance(){
-        return new McuCanExample();
+/** 模拟底层的组件。第三方组件。不可变动。 */
+public final class McuCan {
+    public static McuCan getInstance(){
+        return new McuCan();
     }
-    private McuCanExample() {
+    private McuCan() {
     }
     // 模拟了一个数据发送方法，具体实现由车机大屏的MCU实现。最终交给应用层使用。
     public native void sendCanData(int canId, int[] data8);

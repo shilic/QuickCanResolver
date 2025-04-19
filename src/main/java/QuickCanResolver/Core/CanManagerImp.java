@@ -270,6 +270,7 @@ public class CanManagerImp implements CanManagerService {
         dbcMap = new ConcurrentHashMap<>();
         canCoderMap = new ConcurrentHashMap<>();
         modelMap = new ConcurrentHashMap<>();
+        System.out.println("Manager：数据管理层 Manager 初始化完成 ");
     }
 
     /**
@@ -279,6 +280,7 @@ public class CanManagerImp implements CanManagerService {
 
     public void clearDBC(String dbcTag){
         dbcMap.remove(dbcTag);
+        canCoderMap.remove(dbcTag);
     }
 
     /**
@@ -287,30 +289,16 @@ public class CanManagerImp implements CanManagerService {
 
     public void clearAllDbc(){
         dbcMap.clear();
-    }
-
-    /**
-     * 清理指定 CanCoder(编解码器)
-     */
-
-    public void clearCanCoder(String dbcTag){
-        canCoderMap.remove(dbcTag);
-    }
-
-    /**
-     * 清理所有 CanCoder(编解码器)
-     */
-    public void clearAllCanCoder(){
         canCoderMap.clear();
     }
-
     /**
      * 清理所有注册项
      */
 
     public void clear() {
-        clearAllCanCoder();
         clearAllDbc();
+        modelMap.clear();
+        System.out.println("清理完成所有绑定关系");
     }
 
 

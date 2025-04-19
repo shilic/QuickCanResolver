@@ -11,8 +11,8 @@ import QuickCanResolver.Core.DbcBinding;
 //@DbcBinding(dbcTag = "testDbc", dbcPath = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\Example.dbc")
     // 嵌套注解，实现更为复杂的数据的注解，现在可以传入多个DBC给一个数据模型了。可以使用静态常量
 @DbcBinding({
-        @DbcBinding.Dbc(dbcTag = Demo1.TEST_DBC, dbcPath = Demo1.DBC_PATH),
-        @DbcBinding.Dbc(dbcTag = Demo1.TEST_DBC2, dbcPath = Demo1.DBC_PATH2)
+        @DbcBinding.Dbc(dbcTag = DemoData.TEST_DBC, dbcPath = DemoData.DBC_PATH),
+        @DbcBinding.Dbc(dbcTag = DemoData.TEST_DBC2, dbcPath = DemoData.DBC_PATH2)
 })
 public class CarDataModel implements CanCopyable<CarDataModel> , Cloneable {
     @CanBinding(signalTag = "CabinToCCS1_FactoryID")

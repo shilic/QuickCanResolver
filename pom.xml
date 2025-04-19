@@ -9,18 +9,6 @@
     <version>1.0-SNAPSHOT</version>
 
     <dependencies>
-<!--        &lt;!&ndash;xlsx  07&ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.apache.poi</groupId>-->
-<!--            <artifactId>poi-ooxml</artifactId>-->
-<!--            <version>5.2.3</version>-->
-<!--        </dependency>-->
-<!--        &lt;!&ndash;xls  03&ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.apache.poi</groupId>-->
-<!--            <artifactId>poi</artifactId>-->
-<!--            <version>5.2.3</version>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

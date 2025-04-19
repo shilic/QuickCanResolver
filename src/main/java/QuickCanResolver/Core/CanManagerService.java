@@ -36,19 +36,11 @@ public interface CanManagerService {
      * 取消所有DBC的注册
      */
     void clearAllDbc();
-    /**
-     * 清理指定 CanCoder(编解码器)
-     */
-    void clearCanCoder(String dbcTag);
-    /**
-     * 清理所有 CanCoder(编解码器)
-     */
-    void clearAllCanCoder();
+
     /**
      * 清理所有注册项
      */
     default void clear() {
-        clearAllCanCoder();
         clearAllDbc();
     }
 }

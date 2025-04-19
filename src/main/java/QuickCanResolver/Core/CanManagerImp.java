@@ -114,6 +114,10 @@ public class CanManager {
         return canCoder.enCode_I(canId);
     }
 
+
+
+
+
     /**
      * 根据canID查询dbcTag
      */
@@ -279,16 +283,16 @@ public class CanManager {
     }
 
     /**
-     * 清理指定 canIO
+     * 清理指定 CanCoder(编解码器)
      */
-    public void clearCanTransform(String dbcTag){
+    public void clearCanCoder(String dbcTag){
         canCoderMap.remove(dbcTag);
     }
 
     /**
-     * 清理所有 canIO
+     * 清理所有 CanCoder(编解码器)
      */
-    public void clearAllCanIO(){
+    public void clearAllCanCoder(){
         canCoderMap.clear();
     }
 
@@ -296,7 +300,7 @@ public class CanManager {
      * 清理所有注册项
      */
     public void clear() {
-        clearAllCanIO();
+        clearAllCanCoder();
         clearAllDbc();
     }
 

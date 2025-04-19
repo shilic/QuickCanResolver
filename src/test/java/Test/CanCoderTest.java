@@ -1,7 +1,7 @@
 import Demo.CarDataModel;
 import QuickCanResolver.Core.CanCoder;
 import QuickCanResolver.Core.CanFrameData;
-import QuickCanResolver.Core.CanManager;
+import QuickCanResolver.Core.CanManagerImp;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -37,17 +37,17 @@ public class CanCoderTest {
 
 
     CarDataModel model = new CarDataModel();
-    CanManager canManager = CanManager.getInstance();
+    CanManagerImp canManagerImp = CanManagerImp.getInstance();
     List<CanFrameData> canFrameDataList;
     List<CanFrameData> canFrameDataList2;
     long bindTimeCost;
     {
         /* 手动绑定存在很多问题，故也准备把这一部分优化了 */
-        canManager.addDbcToMap("testDbc",path1); // 绑定DBC文件
-        canManager.addDbcToMap("testDbc2",path2); // 绑定DBC文件
+        canManagerImp.addDbcToMap("testDbc",path1); // 绑定DBC文件
+        canManagerImp.addDbcToMap("testDbc2",path2); // 绑定DBC文件
 
         long startTime = System.currentTimeMillis();
-        canManager.bindModelAndField(model.getClass(),model); // 绑定数据模型
+        canManagerImp.bindModelAndField(model.getClass(),model); // 绑定数据模型
         long endTime = System.currentTimeMillis();
         bindTimeCost = endTime - startTime;
         //System.out.println("绑定耗时 : " + bindTimeCost+" 毫秒");
@@ -97,7 +97,7 @@ public class CanCoderTest {
     @SuppressWarnings("deprecation")
     @Test
     public void concurrentTest(){
-        CanCoder canCoder = canManager.getCanCoder("testDbc");
+        CanCoder canCoder = canManagerImp.getCanCoder("testDbc");
         long startTime = System.currentTimeMillis();
         for (int i = 0 ;i<num ;i++){
             // 以下代码用于测试报文的  接收
@@ -114,7 +114,7 @@ public class CanCoderTest {
      */
     @Test
     public void singleThreadTest(){
-        CanCoder canCoder = canManager.getCanCoder("testDbc");
+        CanCoder canCoder = canManagerImp.getCanCoder("testDbc");
         long startTime = System.currentTimeMillis();
         for (int i = 0 ;i<num ;i++){
             // 以下代码用于测试报文的  接收
@@ -130,7 +130,7 @@ public class CanCoderTest {
      */
     @Test
     public void syncTest(){
-        CanCoder canCoder = canManager.getCanCoder("testDbc");
+        CanCoder canCoder = canManagerImp.getCanCoder("testDbc");
         long startTime = System.currentTimeMillis();
         for (int i = 0 ;i<num ;i++){
             canCoder.syncDeCode_B(msg1_Id,data8_);
@@ -146,7 +146,7 @@ public class CanCoderTest {
      */
     @Test
     public void poolTest(){
-        CanCoder canCoder = canManager.getCanCoder("testDbc");
+        CanCoder canCoder = canManagerImp.getCanCoder("testDbc");
 
         long startTime = System.currentTimeMillis();
 
@@ -202,7 +202,7 @@ public class CanCoderTest {
      */
     @Test
     public void poolTest2() {
-        CanCoder canCoder = canManager.getCanCoder("testDbc");
+        CanCoder canCoder = canManagerImp.getCanCoder("testDbc");
 
         long startTime = System.currentTimeMillis();
 
@@ -260,7 +260,7 @@ public class CanCoderTest {
      */
     @Test
     public void singleThreadTest2(){
-        CanCoder canCoder = canManager.getCanCoder("testDbc");
+        CanCoder canCoder = canManagerImp.getCanCoder("testDbc");
 
         int num = 10;
 
@@ -288,7 +288,7 @@ public class CanCoderTest {
     @SuppressWarnings("unused")
     @Test
     public void fieldToCanITest() {
-        CanCoder canCoder = canManager.getCanCoder("testDbc");
+        CanCoder canCoder = canManagerImp.getCanCoder("testDbc");
 
 
 

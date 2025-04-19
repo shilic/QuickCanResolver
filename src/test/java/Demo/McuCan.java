@@ -20,4 +20,6 @@ public final class McuCan {
         /** 数据监听，当有报文来时触发以下方法。解码CAN报文，进行界面的绘制等操作。*/
         void onStatus(int canId, byte[] data8);
     }
+
+
 }

@@ -16,7 +16,7 @@ public class Demo3Test extends MyActivity {
     CarDataModel oldModel = canIo.manager.bind(CarDataModel.class);
     {
         // 初始化数据，也可以不初始化
-        canIo.manager.deCode_B(msg1_Id,data8_);
+        canIo.manager.deCode_B(msg1_Id, data8_);
         System.out.println("oldModel Value = " + oldModel.getMsg1Value());  //打印值
         /* 初始化数据打印如下
          * oldModel Value =

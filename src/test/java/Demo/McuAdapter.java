@@ -8,6 +8,7 @@ import quickCanResolver.core.McuService;
 public class McuAdapter implements McuService {
     // 最终交给底层的 McuCan 来实现。
     McuCan mcuCan = McuCan.getInstance(); //第三方组件。不可变动。 同时，第三方的组件和现有的接口有所不同，故采用适配器模式，适配现有接口。
+    McuCanListenerEvent listenerEvent ;
     public McuAdapter() {
     }
 
@@ -19,22 +20,27 @@ public class McuAdapter implements McuService {
 
     @Override
     public void nativeRegister(CanListenService canListener) {
-        // 这里会首先回调本地的方法调用。先调用第三方组件的方法
-        mcuCan.nativeRegisterCanListener(new McuCan.McuCanListener() {
-            @Override
-            public void onStatus(int canId, byte[] data8) {
-                // 拿到第三方的数据后， 最终回调了我自己写的监听函数。
-                // 首先进行数据的解析。
-                CanIo.getInstance().manager.deCode_B(canId, data8);
-                // 再回调从 Activity 传入的回调函数
-                canListener.listened(canId);
-            }
-        });
-        //mcuCan.registerCanListener(canListener::listened);
+        listenerEvent = new McuCanListenerEvent(canListener);
+        // 这里会首先回调本地的方法调用。先调用第三方组件的方法。最后调用自己的方法
+        mcuCan.nativeRegisterCanListener(listenerEvent);
     }
 
     @Override
     public void nativeUnRegister(CanListenService canListener) {
-        mcuCan.unregisterCan((canId, data8) -> canListener.listened(canId));
+        mcuCan.unregisterCan(listenerEvent);
+    }
+    public static class McuCanListenerEvent implements McuCan.McuCanListener{
+        CanListenService canListener;
+        public McuCanListenerEvent(CanListenService canListener){
+            this.canListener = canListener;
+        }
+        @Override
+        public void onStatus(int canId, byte[] data8) {
+            // 拿到第三方的数据后， 最终回调了我自己写的监听函数。
+            // 首先进行数据的解析。
+            CanIo.getInstance().manager.deCode_B(canId, data8);
+            // 再回调从 Activity 传入的回调函数
+            canListener.listened(canId);
+        }
     }
 }

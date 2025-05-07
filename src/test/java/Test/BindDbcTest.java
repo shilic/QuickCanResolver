@@ -72,8 +72,8 @@ public class BindDbcTest {
         long startTime = System.currentTimeMillis();
         for (int i = 0 ; i < num ; i++){
             CanFrameData canFrameData = getRandomData();
-            int canId = canFrameData.getMsgId();
-            byte[] data = canFrameData.getBytes8();
+            int canId = canFrameData.msgId;
+            byte[] data = canFrameData.bytes8;
 
             // 使用时，只需要一行代码即可更新数据到绑定的 model 中
             canManagerImp.deCode_B(canId,data);

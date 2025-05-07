@@ -156,8 +156,8 @@ public class CanCoderTest {
         // canFrameDataList 中有 9 组报文，其中有 3 种报文id ，假如每个执行1秒，则单线程执行9秒。
         // 采用线程池则执行3秒，而不是1秒。因为我给每个ID 都加了锁。
         for (CanFrameData canFrameData : canFrameDataList){
-            int canId = canFrameData.getMsgId();
-            byte[] data = canFrameData.getBytes8();
+            int canId = canFrameData.msgId;
+            byte[] data = canFrameData.bytes8;
             ReentrantLock lock = canCoder.getLock(canId);
             executor.submit(() -> {
                 lock.lock();
@@ -217,8 +217,8 @@ public class CanCoderTest {
             // 实际生产中，报文的比拟是随机的，而不是固定比例的，故新增测试用例。
             // 100个数据，3种报文，若比拟固定，则耗时33秒，若比拟随机，则时间不确定。核心线程池数量4，实际上只有3个在运行。
             CanFrameData canFrameData = getRandomData();
-            int canId = canFrameData.getMsgId();
-            byte[] data = canFrameData.getBytes8();
+            int canId = canFrameData.msgId;
+            byte[] data = canFrameData.bytes8;
             switch (canId){
                 case msg1_Id:
                     count1++;
@@ -269,8 +269,8 @@ public class CanCoderTest {
         long startTime = System.currentTimeMillis();
         for (int i = 0 ; i < num ; i++){
             CanFrameData canFrameData = getRandomData();
-            int canId = canFrameData.getMsgId();
-            byte[] data = canFrameData.getBytes8();
+            int canId = canFrameData.msgId;
+            byte[] data = canFrameData.bytes8;
             canCoder.deCode_B(canId,data);
             System.out.println("model = "+ model.getMsg1Value());
         }

@@ -1,8 +1,8 @@
 package Demo;
 
-import QuickCanResolver.Core.CanBinding;
-import QuickCanResolver.Core.CanCopyable;
-import QuickCanResolver.Core.DbcBinding;
+import quickCanResolver.core.CanBinding;
+import quickCanResolver.core.CanCopyable;
+import quickCanResolver.core.DbcBinding;
 
 @DbcBinding({
         @DbcBinding.Dbc(dbcTag = DemoData.TEST_DBC, dbcPath = DemoData.DBC_PATH),

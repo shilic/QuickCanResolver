@@ -1,8 +1,8 @@
 package Demo;
 
-import QuickCanResolver.Core.CanBinding;
-import QuickCanResolver.Core.CanCopyable;
-import QuickCanResolver.Core.DbcBinding;
+import quickCanResolver.core.CanBinding;
+import quickCanResolver.core.CanCopyable;
+import quickCanResolver.core.DbcBinding;
 
 /**
  * 定义一个数据模型类，仅用于测试，除了最基本的数据模型外，不进行额外操作。

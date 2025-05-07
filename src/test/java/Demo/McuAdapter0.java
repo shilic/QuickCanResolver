@@ -1,7 +1,7 @@
 package Demo;
 
-import QuickCanResolver.Core.CanManagerImp;
-import QuickCanResolver.Core.CanSendService;
+import quickCanResolver.core.CanManagerImp;
+import quickCanResolver.core.CanSendService;
 
 /**
  * 将第三方组件彻底的从业务逻辑组件 Demo2 中解耦出来。由于不同的第三方组件，实现的回调函数可能不一样，所以就需要创建新的适配器。

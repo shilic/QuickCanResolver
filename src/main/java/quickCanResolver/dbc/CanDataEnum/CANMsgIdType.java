@@ -1,4 +1,4 @@
-package QuickCanResolver.DBC.CanDataEnum;
+package quickCanResolver.dbc.CanDataEnum;
 
 /**
  * 帧ID类型  <br>标准帧 Standard 范围 0x0~0x7FF  ;<br>扩展帧 Extended 范围 0x0~0x1FFF_FFFF ;

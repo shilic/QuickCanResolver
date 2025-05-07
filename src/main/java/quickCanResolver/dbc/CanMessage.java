@@ -1,8 +1,8 @@
-package QuickCanResolver.DBC;
+package quickCanResolver.dbc;
 
-import QuickCanResolver.DBC.CanDataEnum.CANMsgIdType;
-import QuickCanResolver.DBC.CanDataEnum.MsgSendType;
-import QuickCanResolver.DBC.CanDataEnum.MsgType;
+import quickCanResolver.dbc.CanDataEnum.CANMsgIdType;
+import quickCanResolver.dbc.CanDataEnum.MsgSendType;
+import quickCanResolver.dbc.CanDataEnum.MsgType;
 
 import java.util.HashSet;
 import java.util.Map;

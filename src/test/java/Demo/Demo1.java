@@ -1,6 +1,6 @@
 package Demo;
 
-import QuickCanResolver.Core.CanManagerImp;
+import quickCanResolver.core.CanManagerImp;
 
 public class Demo1 extends MyActivity {
 

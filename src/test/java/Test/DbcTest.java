@@ -1,9 +1,9 @@
 package Test;
 
-import QuickCanResolver.Core.CanCoder;
-import QuickCanResolver.Core.DbcParse;
-import QuickCanResolver.DBC.CanDbc;
-import QuickCanResolver.DBC.CanSignal;
+import quickCanResolver.core.CanCoder;
+import quickCanResolver.core.DbcParse;
+import quickCanResolver.dbc.CanDbc;
+import quickCanResolver.dbc.CanSignal;
 import org.junit.Test;
 
 import java.util.Arrays;

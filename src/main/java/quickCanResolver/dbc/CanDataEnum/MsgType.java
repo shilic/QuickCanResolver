@@ -1,4 +1,4 @@
-package QuickCanResolver.DBC.CanDataEnum;
+package quickCanResolver.dbc.CanDataEnum;
 
 /**
  * 报文类型 ，普通 Normal，诊断报文 Diagnosis ，以及网络管理报文 NetworkManagement 。

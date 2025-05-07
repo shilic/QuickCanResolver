@@ -1,4 +1,4 @@
-package QuickCanResolver.Core;
+package quickCanResolver.core;
 
 public interface CanListenService {
 //    default void listened(int canId, byte[] data8){

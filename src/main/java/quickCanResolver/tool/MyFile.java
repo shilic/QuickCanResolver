@@ -1,4 +1,4 @@
-package QuickCanResolver.CanTool;
+package quickCanResolver.tool;
 
 import java.io.File;
 import java.io.IOException;

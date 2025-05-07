@@ -1,4 +1,4 @@
-package QuickCanResolver.DBC;
+package quickCanResolver.dbc;
 
 import java.lang.reflect.Field;
 

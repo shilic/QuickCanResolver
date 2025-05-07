@@ -1,4 +1,4 @@
-package QuickCanResolver.DBC.CanDataEnum;
+package quickCanResolver.dbc.CanDataEnum;
 
 /*
 * 解释LSB和MSB。

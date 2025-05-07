@@ -1,7 +1,7 @@
 package Demo;
 
-import QuickCanResolver.Core.CanManagerImp;
-import QuickCanResolver.Core.CanSendService;
+import quickCanResolver.core.CanManagerImp;
+import quickCanResolver.core.CanSendService;
 
 import java.lang.ref.WeakReference;
 

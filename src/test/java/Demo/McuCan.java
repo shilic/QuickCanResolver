@@ -4,7 +4,7 @@ package Demo;
 // 第三方组件无法改动，所以需要做适配。
 // 模拟第三方组件，用于模拟实车上的CAN收发。
 
-import QuickCanResolver.CanTool.MyByte;
+import quickCanResolver.tool.SLCTool;
 
 import java.util.Arrays;
 import java.util.Timer;
@@ -49,7 +49,7 @@ public final class McuCan {
     /** 模拟了一个数据发送方法，具体实现由车机大屏的MCU实现。最终交给应用层使用。 */
     public void nativeSendCanData( int canId, int[] data8 ) {
         System.out.println("McuCan：成功在本地发送报文" );
-        System.out.println("id = "+ MyByte.hex2Str(canId) +", 发送的报文为 "+ Arrays.toString(data8) );
+        System.out.println("id = "+ SLCTool.hex2Str(canId) +", 发送的报文为 "+ Arrays.toString(data8) );
     }
     /** 模拟了一个数据监听方法的注册，将数据监听接口传给本地方法后，由本地方法回调你写的函数 */
     public void nativeRegisterCanListener(McuCanListener mcuCanListener){

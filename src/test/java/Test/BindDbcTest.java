@@ -2,8 +2,8 @@ package Test;
 
 import Demo.CarDataModel;
 import Demo.ExampleDataModel3;
-import QuickCanResolver.Core.CanFrameData;
-import QuickCanResolver.Core.CanManagerImp;
+import quickCanResolver.core.CanFrameData;
+import quickCanResolver.core.CanManagerImp;
 import org.junit.Test;
 
 import java.util.ArrayList;

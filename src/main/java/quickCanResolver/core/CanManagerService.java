@@ -1,4 +1,4 @@
-package QuickCanResolver.Core;
+package quickCanResolver.core;
 
 public interface CanManagerService {
     /**框架最主要方法 ： 绑定 dbc <br>

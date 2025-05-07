@@ -1,4 +1,4 @@
-package QuickCanResolver.Core;
+package quickCanResolver.core;
 
 import java.lang.annotation.*;
 

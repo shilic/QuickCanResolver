@@ -1,4 +1,4 @@
-package QuickCanResolver.CanTool;
+package quickCanResolver.tool;
 
 import java.math.BigInteger;
 import java.text.DecimalFormat;
@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 /**
  * 该类是工具类，用于 int、 byte 、bit 、String 等数据类型之间相互转换
  */
-public class MyByte {
+public class SLCTool {
     /** 正则表达式，判断是否是word格式，以字母或者下划线开头，并且只能是字母或者下划线还有数字组成*/
     public static final String isWordRegex = "\\b[a-zA-Z_]+\\w*";
     /** 此变量用于调整单词长度，为了适配之前的协议，我默认成了128。为了更好的兼容性最好单词长度小于32。*/
@@ -519,4 +519,4 @@ public class MyByte {
             super(message);
         }
     }
-}//class MyByte
+}//class SLCTool

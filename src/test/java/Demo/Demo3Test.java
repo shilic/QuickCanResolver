@@ -1,7 +1,7 @@
 package Demo;
 
-import QuickCanResolver.Core.CanIo;
-import QuickCanResolver.Core.CanListenService;
+import quickCanResolver.core.CanIo;
+import quickCanResolver.core.CanListenService;
 import org.junit.Test;
 
 import java.lang.ref.WeakReference;

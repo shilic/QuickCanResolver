@@ -1,9 +1,9 @@
-package QuickCanResolver.Core;
+package quickCanResolver.core;
 
-import QuickCanResolver.DBC.FieldChanger;
-import QuickCanResolver.DBC.CanSignal;
-import QuickCanResolver.DBC.CanDbc;
-import QuickCanResolver.DBC.CanMessage;
+import quickCanResolver.dbc.FieldChanger;
+import quickCanResolver.dbc.CanSignal;
+import quickCanResolver.dbc.CanDbc;
+import quickCanResolver.dbc.CanMessage;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

@@ -1,10 +1,10 @@
-package QuickCanResolver.Core;
+package quickCanResolver.core;
 
-import QuickCanResolver.DBC.CanDataEnum.CANByteOrder;
-import QuickCanResolver.CanTool.MyByte;
-import QuickCanResolver.DBC.CanSignal;
-import QuickCanResolver.DBC.CanDbc;
-import QuickCanResolver.DBC.CanMessage;
+import quickCanResolver.dbc.CanDataEnum.CANByteOrder;
+import quickCanResolver.tool.SLCTool;
+import quickCanResolver.dbc.CanSignal;
+import quickCanResolver.dbc.CanDbc;
+import quickCanResolver.dbc.CanMessage;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -44,7 +44,7 @@ public class CanCoder {
         if (msg == null){
             return;
         }
-        byte[] data64 = MyByte.from8BytesTo64Bits(data8,MyByte.DataType.Intel); // 8 -->64
+        byte[] data64 = SLCTool.from8BytesTo64Bits(data8, SLCTool.DataType.Intel); // 8 -->64
         // 64 --> signal ;循环，逐个将 64bits数组中的数据按位取出，并解析到信号的字段中。
         for (CanSignal signal : msg.getSignalMap().values()) {
             // 解析值
@@ -70,7 +70,7 @@ public class CanCoder {
         for (CanSignal signal : sendMsg.getSignalMap().values()) {
             sigToBits64(data64,signal.readValue() , signal.getStartBit(), signal.getBitLength(), signal.getFactor() , signal.getOffset() ,signal.getByteOrder());
         }
-        return MyByte.from64bitsTo8BytesI(data64, MyByte.DataType.Intel); // 64 --> 8
+        return SLCTool.from64bitsTo8BytesI(data64, SLCTool.DataType.Intel); // 64 --> 8
     }
 
     /**
@@ -84,7 +84,7 @@ public class CanCoder {
         if (msg == null) {
             return;
         }
-        byte[] data64 = MyByte.from8BytesTo64Bits(data8,MyByte.DataType.Intel); // 8 --> 64
+        byte[] data64 = SLCTool.from8BytesTo64Bits(data8, SLCTool.DataType.Intel); // 8 --> 64
         // 64 --> signal ;循环，逐个将 64bits数组中的数据按位取出，并解析到信号的字段中。
 
         ReentrantLock lock = getLock(canId);
@@ -122,8 +122,8 @@ public class CanCoder {
         //System.out.println("待计算值，startBit = " + startBit +" ;  bitLength = "+bitLength+" ;  factor = " + factor + " ; offset = " + offset) ;
         int rawValue ; //总线值，未处理值
         double phyValue; //实际值
-        MyByte.DataType inputType = transOrder(signal.getByteOrder());
-        rawValue = MyByte.bitsToInt(Arrays.copyOfRange(data64,startBit,startBit + bitLength),inputType) ; // MyByte.DataType.Intel
+        SLCTool.DataType inputType = transOrder(signal.getByteOrder());
+        rawValue = SLCTool.bitsToInt(Arrays.copyOfRange(data64,startBit,startBit + bitLength),inputType) ; // SLCTool.DataType.Intel
         phyValue = (rawValue * factor) + offset ; //不包括8
         //System.out.println("计算后 ，rawValue="+rawValue+" , phyValue="+phyValue);
         //如果准备输出 double 类型数据，首先判断 总线值不可以是 0xFF 。
@@ -174,8 +174,8 @@ public class CanCoder {
      */
     @SuppressWarnings("unused")
     private void sigToBits64(byte[] sendCanData, int instanceValue, int startBit , int bitLength, CANByteOrder instanceByteOrder ) {
-        MyByte.DataType inputType = transOrder(instanceByteOrder);
-        byte[] src = MyByte.intToBits(instanceValue,inputType,bitLength)  ;  //将总线值变成 0或者1 的数组
+        SLCTool.DataType inputType = transOrder(instanceByteOrder);
+        byte[] src = SLCTool.intToBits(instanceValue,inputType,bitLength)  ;  //将总线值变成 0或者1 的数组
         System.arraycopy( src ,0, sendCanData , startBit , bitLength  );  //将数组赋值到目标 8*8 = 64 bits 的矩阵中
     }
     /**
@@ -190,22 +190,22 @@ public class CanCoder {
         //System.out.println("待计算值，startBit = " + startBit +" ;  bitLength = "+bitLength+" ;  factor = " + factor + " ; offset = " + offset+",instanceValue = "+instanceValue) ;
         int rawValue  = (int) ( (instanceValue - offset) / factor ); //获取总线值
         //System.out.println("计算后 ，rawValue="+rawValue);
-        MyByte.DataType inputType = transOrder(instanceByteOrder);
-        byte[] src = MyByte.intToBits(rawValue,inputType, bitLength ) ;  //将总线值变成 0或者1 的数组
+        SLCTool.DataType inputType = transOrder(instanceByteOrder);
+        byte[] src = SLCTool.intToBits(rawValue,inputType, bitLength ) ;  //将总线值变成 0或者1 的数组
         System.arraycopy( src ,0, bits64, startBit , bitLength  );  //将数组 复制 到目标 8*8 = 64 bits 的矩阵中
     }
     /** 转换不同的英特尔格式 */
-    public static MyByte.DataType transOrder(CANByteOrder instanceByteOrder) {
+    public static SLCTool.DataType transOrder(CANByteOrder instanceByteOrder) {
         if (instanceByteOrder == CANByteOrder.Intel){
-            return MyByte.DataType.Intel;
+            return SLCTool.DataType.Intel;
         }
         else {
-            return MyByte.DataType.Motorola;
+            return SLCTool.DataType.Motorola;
         }
     }
     @SuppressWarnings("unused")
-    public static CANByteOrder transOrder(MyByte.DataType instanceByteOrder) {
-        if (instanceByteOrder == MyByte.DataType.Intel){
+    public static CANByteOrder transOrder(SLCTool.DataType instanceByteOrder) {
+        if (instanceByteOrder == SLCTool.DataType.Intel){
             return CANByteOrder.Intel;
         }
         else {
@@ -235,7 +235,7 @@ public class CanCoder {
             return;
         }
         // 8 -->64
-        byte[] data64 = MyByte.from8BytesTo64Bits(data8,MyByte.DataType.Intel);
+        byte[] data64 = SLCTool.from8BytesTo64Bits(data8, SLCTool.DataType.Intel);
         // 64 --> signal ;
         for (CanSignal signal : msg.getSignalMap().values()) {
             // 获取值之后，调用方法将数据写入到一个新的模型中，实现数据的刷新。
@@ -272,13 +272,13 @@ public class CanCoder {
         }
         /* 接受到的8*8的CAN数据矩阵，共64个bit */
         byte[] data64; //接收到的数据
-        data64 = MyByte.from8BytesTo64Bits(data8,MyByte.DataType.Intel); // 8 -->64
+        data64 = SLCTool.from8BytesTo64Bits(data8, SLCTool.DataType.Intel); // 8 -->64
         // 拿到id之后，需要到DBC文件中查询对应的对象。然后修改这个对象
         CanMessage msg = msgMap.get(canId);
         if (msg == null){
             return;
         }
-        //System.out.println("正在解析接收报文，解析报文 ID = " + MyByte.hex2Str(canId));
+        //System.out.println("正在解析接收报文，解析报文 ID = " + SLCTool.hex2Str(canId));
         // 遍历消息，取出数组值,并修改所有的消息值 。可用线程池或者并行流优化。可以考虑使用并行流（parallelStream()）来简化代码。并行流会自动处理并发执行，并且代码会更加简洁。
         msg.getSignalMap().values().parallelStream().forEach(
                 signal ->{
@@ -299,7 +299,7 @@ public class CanCoder {
         }
         byte[] src = concurrentSigTo64Bits(sendId); // 第一步，signal --> 64
         int[] re;
-        re = MyByte.from64bitsTo8BytesI(src, MyByte.DataType.Intel); // 64 --> 8
+        re = SLCTool.from64bitsTo8BytesI(src, SLCTool.DataType.Intel); // 64 --> 8
         return re;
     }
     /**
@@ -309,7 +309,7 @@ public class CanCoder {
      */
     @Deprecated
     public byte[] concurrentSigTo64Bits(int sendId) {
-        //System.out.println("正在解析发送报文，发送报文 ID = " + MyByte.hex2Str(sendId));
+        //System.out.println("正在解析发送报文，发送报文 ID = " + SLCTool.hex2Str(sendId));
         byte[] sendCanData = new byte[64];
         CanMessage sendMsg = msgMap.get(sendId);
         if (sendMsg == null){

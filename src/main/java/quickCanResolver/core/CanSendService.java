@@ -1,4 +1,4 @@
-package QuickCanResolver.Core;
+package quickCanResolver.core;
 
 /** CAN输出服务 */
 public interface CanSendService {

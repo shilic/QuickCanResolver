@@ -1,4 +1,4 @@
-package QuickCanResolver.Core;
+package quickCanResolver.core;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

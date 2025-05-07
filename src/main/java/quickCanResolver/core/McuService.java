@@ -1,4 +1,4 @@
-package QuickCanResolver.Core;
+package quickCanResolver.core;
 
 /** 抽象底层的 CAN 收发实现  */
 public interface McuService {

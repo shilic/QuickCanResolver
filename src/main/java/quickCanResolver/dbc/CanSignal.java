@@ -1,6 +1,6 @@
-package QuickCanResolver.DBC;
+package quickCanResolver.dbc;
 
-import QuickCanResolver.DBC.CanDataEnum.*;
+import quickCanResolver.dbc.CanDataEnum.*;
 
 import java.lang.reflect.Field;
 import java.util.*;

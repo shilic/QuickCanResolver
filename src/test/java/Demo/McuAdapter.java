@@ -1,8 +1,8 @@
 package Demo;
 
-import QuickCanResolver.Core.CanIo;
-import QuickCanResolver.Core.CanListenService;
-import QuickCanResolver.Core.McuService;
+import quickCanResolver.core.CanIo;
+import quickCanResolver.core.CanListenService;
+import quickCanResolver.core.McuService;
 
 /** 因为为了适配第三方组件McuCan。故采用适配器模式，用于适配不同的底层实现。上层直接使用接口，底层变动，上层不需要变动。 */
 public class McuAdapter implements McuService {

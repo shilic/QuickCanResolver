@@ -1,12 +1,12 @@
-package QuickCanResolver.Core;
+package quickCanResolver.core;
 
-import QuickCanResolver.DBC.CanDataEnum.CANByteOrder;
-import QuickCanResolver.DBC.CanDataEnum.CANDataType;
-import QuickCanResolver.DBC.CanDataEnum.CANMsgIdType;
-import QuickCanResolver.DBC.CanDataEnum.GroupType;
-import QuickCanResolver.DBC.CanDbc;
-import QuickCanResolver.DBC.CanMessage;
-import QuickCanResolver.DBC.CanSignal;
+import quickCanResolver.dbc.CanDataEnum.CANByteOrder;
+import quickCanResolver.dbc.CanDataEnum.CANDataType;
+import quickCanResolver.dbc.CanDataEnum.CANMsgIdType;
+import quickCanResolver.dbc.CanDataEnum.GroupType;
+import quickCanResolver.dbc.CanDbc;
+import quickCanResolver.dbc.CanMessage;
+import quickCanResolver.dbc.CanSignal;
 
 import java.io.*;
 import java.util.HashSet;

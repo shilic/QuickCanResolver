@@ -1,4 +1,4 @@
-# QuickCanResolver ：车身CAN报文快速解析框架|一种汽车SOA架构的实现|汽车SOA架构设计与软件平台框架|BY 阿城同学
+# quickCanResolver ：车身CAN报文快速解析框架|一种汽车SOA架构的实现|汽车SOA架构设计与软件平台框架|BY 阿城同学
 
 # *摘要* 
 
@@ -452,7 +452,7 @@ switch (lineStart){
 // 使用注解将DBC与我们的数据模型绑定到了一起
 @DbcBinding({
          @DbcBinding.Dbc(dbcTag = Demo1.TEST_DBC, dbcPath = Demo1.DBC_PATH),
-        @DbcBinding.Dbc(dbcTag = "testDbc2",dbcPath = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\Example2.dbc")
+        @DbcBinding.Dbc(dbcTag = "testDbc2",dbcPath = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\quickCanResolver\\src\\main\\resources\\DBC\\Example2.dbc")
 })
 public class CarDataModel implements CanCopyable<CarDataModel> , Cloneable {
     @CanBinding(signalTag = "CabinToCCS1_FactoryID")
@@ -824,7 +824,7 @@ private double bits64ToValue(byte[] data64, CanSignal signal, int startBit , int
         int rawValue ; //总线值，未处理值
         double phyValue; //实际值
         MyByte.DataType inputType = transOrder(signal.getByteOrder());
-        rawValue = MyByte.bitsToInt(Arrays.copyOfRange(data64,startBit,startBit + bitLength),inputType) ; // MyByte.DataType.Intel
+        rawValue = MyByte.bitsToInt(Arrays.copyOfRange(data64,startBit,startBit + bitLength),inputType) ; // SLCTool.DataType.Intel
         phyValue = (rawValue * factor) + offset ; 
       // ... 省略部分
         return phyValue;
@@ -1313,7 +1313,7 @@ static byte[] data8_2 = new byte[]{7, 8, 9, 10, (byte) 211, 121, (byte) 200, 100
     }
 ```
 
-​    如果你要适配新的异步编程框架的话，欢迎你克隆我的代码拿去改进，它实现了 `Cloneable`接口，地址在这里[车身Can报文快速解析框架](https://github.com/shilic/QuickCanResolver)。如果你有新的想法，有什么改进意见，欢迎到我的 `github`上发起 `PR`和 `issue`。
+​    如果你要适配新的异步编程框架的话，欢迎你克隆我的代码拿去改进，它实现了 `Cloneable`接口，地址在这里[车身Can报文快速解析框架](https://github.com/shilic/quickCanResolver)。如果你有新的想法，有什么改进意见，欢迎到我的 `github`上发起 `PR`和 `issue`。
 
 
 
@@ -1327,7 +1327,7 @@ static byte[] data8_2 = new byte[]{7, 8, 9, 10, (byte) 211, 121, (byte) 200, 100
 
 # 源代码地址
 
-[QuickCanResolver ：车身CAN报文快速解析框架|一种汽车SOA架构的实现|汽车SOA架构设计与软件平台框架|BY 阿城同学](https://github.com/shilic/QuickCanResolver)
+[quickCanResolver ：车身CAN报文快速解析框架|一种汽车SOA架构的实现|汽车SOA架构设计与软件平台框架|BY 阿城同学](https://github.com/shilic/QuickCanResolver)
 
 # 更新计划
 

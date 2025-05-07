@@ -1,5 +1,7 @@
 package quickCanResolver.core;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 /** 抽象底层的 CAN 收发实现  */
 public interface McuService {
     /** 数据发送方法 */
@@ -8,4 +10,13 @@ public interface McuService {
     void nativeRegister(CanListenService canListener);
     /** 取消注册 */
     void nativeUnRegister(CanListenService canListener);
+
+    /**
+     * 可选配置，从缓存中读取CAN报文。MCU适配器实现该方法后，需要在内部再调用原生方法获取报文，然后再返回给上层
+     * @return 返回一组CAN报文
+     */
+    @SuppressWarnings("unused")
+    default CanFrameData[] nativeReceive() {
+        throw new NotImplementedException();
+    }
 }

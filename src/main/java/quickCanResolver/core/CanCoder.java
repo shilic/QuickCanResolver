@@ -278,7 +278,7 @@ public class CanCoder {
         if (msg == null){
             return;
         }
-        //System.out.println("正在解析接收报文，解析报文 ID = " + SLCTool.hex2Str(canId));
+        //System.out.println("正在解析接收报文，解析报文 ID = " + SLCTool.toHexString(canId));
         // 遍历消息，取出数组值,并修改所有的消息值 。可用线程池或者并行流优化。可以考虑使用并行流（parallelStream()）来简化代码。并行流会自动处理并发执行，并且代码会更加简洁。
         msg.getSignalMap().values().parallelStream().forEach(
                 signal ->{
@@ -309,7 +309,7 @@ public class CanCoder {
      */
     @Deprecated
     public byte[] concurrentSigTo64Bits(int sendId) {
-        //System.out.println("正在解析发送报文，发送报文 ID = " + SLCTool.hex2Str(sendId));
+        //System.out.println("正在解析发送报文，发送报文 ID = " + SLCTool.toHexString(sendId));
         byte[] sendCanData = new byte[64];
         CanMessage sendMsg = msgMap.get(sendId);
         if (sendMsg == null){

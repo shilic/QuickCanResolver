@@ -162,7 +162,7 @@ public class CanCoderTest {
             executor.submit(() -> {
                 lock.lock();
                 try {
-                    //System.out.println("Task " + SLCTool.hex2Str(canId) + " is running on " + Thread.currentThread().getName());
+                    //System.out.println("Task " + SLCTool.toHexString(canId) + " is running on " + Thread.currentThread().getName());
                     canCoder.deCode_B(canId,data);
                     Thread.sleep(1000);
                 }catch (Exception e){
@@ -235,7 +235,7 @@ public class CanCoderTest {
             executor.submit(() -> {
                 lock.lock();
                 try {
-                    //System.out.println("Task " + SLCTool.hex2Str(canId) + " is running on " + Thread.currentThread().getName());
+                    //System.out.println("Task " + SLCTool.toHexString(canId) + " is running on " + Thread.currentThread().getName());
                     canCoder.deCode_B(canId,data);
                     //Thread.sleep(1000);
                 }catch (Exception e){

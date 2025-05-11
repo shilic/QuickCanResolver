@@ -1,6 +1,6 @@
 package quickCanResolver.core;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+//import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /** 抽象底层的 CAN 收发实现  */
 public interface McuService {
@@ -17,6 +17,6 @@ public interface McuService {
      */
     @SuppressWarnings("unused")
     default CanFrameData[] nativeReceive() {
-        throw new NotImplementedException();
+        throw new RuntimeException();
     }
 }

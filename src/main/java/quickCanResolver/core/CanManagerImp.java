@@ -15,6 +15,7 @@ public class CanManagerImp implements CanManagerService {
     protected Map<String, CanDbc> dbcMap;
     protected Map<String, CanCoder> canCoderMap;
     protected static volatile CanManagerImp canManagerImp;
+    // 绑定数据模型
     protected Map<Class<?>,Object> modelMap ;
 
 
@@ -25,14 +26,49 @@ public class CanManagerImp implements CanManagerService {
      */
 
     public <T extends CanCopyable<T>> T bind(Class<T> clazz) {
+        // 查找注解
+        boolean isAnno =  findAnnotation(clazz);
+        if (! isAnno) {
+            return null;
+        }
+        T instance = createInstance(clazz);
+        modelMap.putIfAbsent(clazz,instance);
+        // 给 dbc 中的 CanSignal 绑定字段 ，以及模型
+        bindModelAndField(clazz,instance);
+        return instance; // 返回实例化之后的数据模型
+    }
+    /**框架最主要方法 ： 绑定 dbc <br>
+     * 使用注解，直接绑定dbc和数据模型，省略手动调用的步骤。<br>
+     * 已经封装好所有步骤，供外部直接调用。
+     */
+    @Override
+    public <T extends CanCopyable<T>> T bind(T model) {
+        Class<T> clazz = (Class<T>) model.getClass();
+        boolean isAnno =  findAnnotation(clazz);
+        if (! isAnno) {
+            return null;
+        }
+        //T instance = createInstance(clazz);
+        modelMap.putIfAbsent(clazz,model);
+        // 给 dbc 中的 CanSignal 绑定字段 ，以及模型
+        bindModelAndField(clazz,model);
+        return model;
+    }
+    private  <T extends CanCopyable<T>> boolean findAnnotation(Class<T> clazz){
         // 获取类上的注解
         if (! clazz.isAnnotationPresent(DbcBinding.class)) {
-            return null; // 没有则直接返回null
+            return false; // 没有则直接返回null
         }
         // 拿到注解
         DbcBinding dbcBinding = clazz.getAnnotation(DbcBinding.class);
+        if(dbcBinding == null){
+            return false;
+        }
         // 现在可以一次性给一个数据模型绑定多个DBC
         DbcBinding.Dbc[] rawDbcArray = dbcBinding.value();
+        if (rawDbcArray.length == 0) {
+            return false;
+        }
         // 循环，遍历多个DBC文件，绑定DBC
         for (DbcBinding.Dbc rawDbc : rawDbcArray) {
             String dbcTag = rawDbc.dbcTag();
@@ -45,13 +81,10 @@ public class CanManagerImp implements CanManagerService {
             addDbcToMap(dbcTag,dbcFilePath);
             System.out.println("DBC绑定成功，dbcTag = " + dbcTag + ", dbcFilePath = " + dbcFilePath);
         } // 循环，遍历多个DBC文件
-        T instance = createInstance(clazz);
-        modelMap.putIfAbsent(clazz,instance);
-        // 给 dbc 中的 CanSignal 绑定字段 ，以及模型
-        bindModelAndField(clazz,instance);
-        return instance; // 返回实例化之后的数据模型
+        return true;
     }
-    public static <T> T createInstance(Class<T> clazz) {
+
+    private static <T> T createInstance(Class<T> clazz) {
         try {
             // 获取无参构造函数
             Constructor<T> constructor = clazz.getDeclaredConstructor();
@@ -65,6 +98,9 @@ public class CanManagerImp implements CanManagerService {
     }
     // 新增一个方法，返回绑定的模型。当多个模型和多个报文进行绑定时，接收一个报文可能返回多个数据模型。故需要单独做一个接收
 
+    /**
+     * 获取绑定的初始对象
+     */
     public <T extends CanCopyable<T>> T getModel(Class<T> clazz) {
         return (T) modelMap.get(clazz); // 如果没有查询到，那么会返回空
     }

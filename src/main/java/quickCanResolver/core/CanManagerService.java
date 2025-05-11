@@ -7,6 +7,7 @@ public interface CanManagerService {
      * @param clazz 数据模型Class
      */
     <T extends CanCopyable<T>> T bind(Class<T> clazz);
+    <T extends CanCopyable<T>> T bind(T model);
     /**
      * 返回绑定的模型。当多个模型和多个报文进行绑定时，接收一个报文可能返回多个数据模型。
      * */

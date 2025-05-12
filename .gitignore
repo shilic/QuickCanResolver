@@ -1,15 +1,63 @@
-# Compiled class file
-*.class
+# JetBrains IDE特定配置
+.idea/
+*.iml
+*.ipr
+*.iws
+.idea_modules/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/shelf/
 
-# Log file
-*.log
+# 编译输出目录
+target/
+build/
+out/
+bin/
+gen/
 
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
+# 构建工具相关
+.gradle/
+build/
+dependency-reduced-pom.xml
 .mtj.tmp/
 
+# 字节码与包文件
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# 日志与临时文件
+*.log
+logs/
+temp/
+tmp/
+*.bak
+*.swp
+*.swo
+
+# 环境配置文件
+.env
+.env.local
+*.properties
+*.secret
+
+# Maven特定忽略
+pom.xml.versionsBackup
+.mvn/wrapper/maven-wrapper.properties
+
+# Gradle包装器缓存
+!gradle/wrapper/gradle-wrapper.jar
+
+# 测试相关
+.coverage
+test-output/
 # Package Files #
 *.jar
 *.war

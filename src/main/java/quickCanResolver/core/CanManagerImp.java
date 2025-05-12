@@ -1,9 +1,7 @@
 package quickCanResolver.core;
 
-import quickCanResolver.dbc.FieldChanger;
 import quickCanResolver.dbc.CanSignal;
 import quickCanResolver.dbc.CanDbc;
-import quickCanResolver.dbc.CanMessage;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -11,20 +9,27 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * CAN编解码器的管理器。实现了 dbc 绑定、报文编解码等方法。
+ */
 public class CanManagerImp implements CanManagerService {
+    /** 绑定的dbc */
     protected Map<String, CanDbc> dbcMap;
+    /** 编解码器 */
     protected Map<String, CanCoder> canCoderMap;
-    protected static volatile CanManagerImp canManagerImp;
-    // 绑定数据模型
+    private static volatile CanManagerImp canManagerImp;
+    /** 绑定数据模型 */
     protected Map<Class<?>,Object> modelMap ;
 
 
     /**框架最主要方法 ： 绑定 dbc <br>
      * 使用注解，直接绑定dbc和数据模型，省略手动调用的步骤。<br>
      * 已经封装好所有步骤，供外部直接调用。
-     * @param clazz 数据模型Class
+     * @param clazz 定义好绑定关系的数据模型 的 Class
+     * @param <T> 实现了拷贝接口的数据模型的类型
+     * @return 返回绑定好的数据模型，如果绑定失败，返回null
      */
-
+    @Override
     public <T extends CanCopyable<T>> T bind(Class<T> clazz) {
         // 查找注解
         boolean isAnno =  findAnnotation(clazz);
@@ -40,6 +45,9 @@ public class CanManagerImp implements CanManagerService {
     /**框架最主要方法 ： 绑定 dbc <br>
      * 使用注解，直接绑定dbc和数据模型，省略手动调用的步骤。<br>
      * 已经封装好所有步骤，供外部直接调用。
+     * @param model 定义好绑定关系的数据模型
+     * @param <T> 实现了拷贝接口的数据模型的类型
+     * @return  返回传入的对象，如果绑定失败，那么返回空
      */
     @Override
     public <T extends CanCopyable<T>> T bind(T model) {
@@ -54,14 +62,21 @@ public class CanManagerImp implements CanManagerService {
         bindModelAndField(clazz,model);
         return model;
     }
-    private  <T extends CanCopyable<T>> boolean findAnnotation(Class<T> clazz){
+
+    /**
+     * 查找注解
+     * @param clazz 定义好绑定关系的数据模型 的 Class
+     * @param <T> 实现了拷贝接口的数据模型的类型
+     * @return 返回是否绑定成功
+     */
+    private  <T extends CanCopyable<T>> boolean findAnnotation(Class<T> clazz) {
         // 获取类上的注解
         if (! clazz.isAnnotationPresent(DbcBinding.class)) {
-            return false; // 没有则直接返回null
+            return false;
         }
         // 拿到注解
         DbcBinding dbcBinding = clazz.getAnnotation(DbcBinding.class);
-        if(dbcBinding == null){
+        if(dbcBinding == null) {
             return false;
         }
         // 现在可以一次性给一个数据模型绑定多个DBC
@@ -84,6 +99,12 @@ public class CanManagerImp implements CanManagerService {
         return true;
     }
 
+    /**
+     * 使用反射创建对象实例
+     * @param clazz 定义好绑定关系的数据模型 的 Class
+     * @return 返回实例
+     * @param <T> 泛型
+     */
     private static <T> T createInstance(Class<T> clazz) {
         try {
             // 获取无参构造函数
@@ -100,9 +121,14 @@ public class CanManagerImp implements CanManagerService {
 
     /**
      * 获取绑定的初始对象
+     * @param clazz 定义好绑定关系的数据模型 的 Class
+     * @param <T> 对象需实现拷贝接口
+     * @return 返回绑定的初始对象，如果没有查询到，可能返回空
      */
+    @Override
     public <T extends CanCopyable<T>> T getModel(Class<T> clazz) {
-        return (T) modelMap.get(clazz); // 如果没有查询到，那么会返回空
+        // 如果没有查询到，那么会返回空
+        return (T) modelMap.get(clazz);
     }
 
 
@@ -111,8 +137,9 @@ public class CanManagerImp implements CanManagerService {
      * 注册DBC文件，即初始化一个Dbc文件
      * @param dbcTag DBC标签
      * @param dbcFilePath DBC文件地址
+     * @return 返回一个生成的  dbc
      */
-    public CanDbc addDbcToMap(String dbcTag, String dbcFilePath) {
+    private CanDbc addDbcToMap(String dbcTag, String dbcFilePath) {
         //生成一个 DBC
         CanDbc dbc = DbcParse.getDbcFromFile(dbcTag,dbcFilePath);
         dbcMap.put(dbcTag,dbc);
@@ -121,19 +148,22 @@ public class CanManagerImp implements CanManagerService {
 
     /**
      * 使用新的数据，拷贝一个新的数据对象出来。<br> 用于提供给 LiveData 和 viewModel。<br>
+     * @param clazz 定义好绑定关系的数据模型 的 Class
+     * @param <T> 对象需实现拷贝接口
      * @return 新的对象。
      */
-
+    @Override
     public  <T extends CanCopyable<T>> T createNewModel(Class<T> clazz) {
         T oldDataModel = getModel(clazz);
         // 拷贝一个新的对象。
         return oldDataModel.copyNew();
     }
-
     /**
      * 封装  deCode_B() 方法。接收数据，解码报文。 将接收到的CAN报文，解析后存入绑定好的数据模型中
+     * @param canId  canId
+     * @param data8 报文数组
      */
-
+    @Override
     public void deCode_B(int canId, byte[] data8) {
         // 根据 canId 确定要写入哪一个 DBC
         String dbcTag = findDbcTagByCanId(canId);
@@ -142,25 +172,24 @@ public class CanManagerImp implements CanManagerService {
         // 更新数据到 模型中
         canCoder.deCode_B(canId,data8);
     }
-
     /**
-     * 封装  enCode_I() 方法。编码数据，发送报文。
+     * 编码数据，发送报文。
+     * @param canId canId
+     * @return 返回解码后的报文
      */
-
-    public int[] enCode_I(int canId) {
+    @Override
+    public byte[] enCode_B(int canId) {
         // 根据 canId 确定要写入哪一个 DBC
         String dbcTag = findDbcTagByCanId(canId);
         // 根据 DbcTag 获取处理者
         CanCoder canCoder = getCanCoder(dbcTag);
-        return canCoder.enCode_I(canId);
+        return canCoder.enCode_B(canId);
     }
-
-
-
-
 
     /**
      * 根据canID查询dbcTag
+     * @param canId  canId
+     * @return 返回查询结果
      */
     private String findDbcTagByCanId(int canId) {
         String dbcTag = null;
@@ -172,6 +201,12 @@ public class CanManagerImp implements CanManagerService {
         }
         return dbcTag;
     }
+
+    /**
+     * 根据类型查找dbc
+     * @param clazz 定义好绑定关系的数据模型 的 Class
+     * @return 返回找到的 dbcTag
+     */
     private static String[] findDbcTagsFromClass(Class<?> clazz) {
         String[] dbcTags = null ;
         if (clazz.isAnnotationPresent(DbcBinding.class)) {
@@ -186,6 +221,12 @@ public class CanManagerImp implements CanManagerService {
         }
         return dbcTags;
     }
+
+    /**
+     * 根据数据模型查找dbc
+     * @param model 定义好绑定关系的数据模型
+     * @return 返回绑定的dbc
+     */
     @SuppressWarnings("unused")
     private static String[] findDbcTagsFromModel(Object model) {
         Class<?> clazz = model.getClass();
@@ -193,12 +234,13 @@ public class CanManagerImp implements CanManagerService {
     }
 
     /**
-     * 相比于上面的方法，该方法只绑定字段，不绑定数据模型。<br>
+     * 绑定字段和数据模型 <br>
      * 该方法必须要在绑定了dbc文件之后使用（也就是 addDbcToMap() 方法）。否则会无法绑定。<br>
      * 步骤也很简单，从已绑定的dbc中查询 CanSignal ,查找是否和字段的注解一致，一致则绑定到 dbc 中。一般在初始化时使用，只会调用一次。
-     * @param dataModelClass 数据模型的类
+     * @param dataModelClass 定义好绑定关系的数据模型 的 Class
+     * @param model 定义好绑定关系的数据模型
      */
-    public void bindModelAndField(Class<?> dataModelClass, Object model){
+    private void bindModelAndField(Class<?> dataModelClass, Object model) {
         // 循环，查找所有字段
         for (Field field : dataModelClass.getDeclaredFields()) {
             // 设置setAccessible为true，绕过访问控制检查
@@ -278,7 +320,7 @@ public class CanManagerImp implements CanManagerService {
      * @param dbcTag DBC的标签
      * @return 返回一个CAN收发器
      */
-    public CanCoder getCanCoder(String dbcTag) {
+    private CanCoder getCanCoder(String dbcTag) {
         CanCoder canCoder = canCoderMap.get(dbcTag); // 如果查到了并且不为空，则直接返回
         if (canCoder == null) { // 为空则重新创建，并加入到表中
             CanDbc dbc = dbcMap.get(dbcTag);
@@ -313,7 +355,7 @@ public class CanManagerImp implements CanManagerService {
      * 取消注册DBC
      * @param dbcTag  对应的DBC标签
      */
-
+    @Override
     public void clearDBC(String dbcTag){
         dbcMap.remove(dbcTag);
         canCoderMap.remove(dbcTag);
@@ -322,7 +364,7 @@ public class CanManagerImp implements CanManagerService {
     /**
      * 取消所有DBC的注册
      */
-
+    @Override
     public void clearAllDbc(){
         dbcMap.clear();
         canCoderMap.clear();
@@ -330,89 +372,11 @@ public class CanManagerImp implements CanManagerService {
     /**
      * 清理所有注册项
      */
-
+    @Override
     public void clear() {
         clearAllDbc();
         modelMap.clear();
         System.out.println("清理完成所有绑定关系");
     }
 
-
-
-
-
-
-    /**
-     * 使用新的数据，拷贝一个新的数据对象出来。<br> 用于提供给 LiveData 和 viewModel。<br>
-     * @param canId canId
-     * @param data8 8位数组
-     * @param oldDataModel 旧的对象
-     * @return 新的对象。
-     */
-    @Deprecated
-    public  <T extends CanCopyable<T>> T createNewModel(int canId, byte[] data8, T oldDataModel) {
-        // 根据 canId 确定要写入哪一个 DBC
-        String dbcTag = findDbcTagByCanId(canId);
-        // 根据 DbcTag 获取处理者
-        CanCoder canCoder = getCanCoder(dbcTag);
-        // 更新数据到 模型中
-        canCoder.updateObj_B(canId,data8,oldDataModel);
-
-        // 拷贝一个新的对象。
-        return oldDataModel.copyNew();
-    }
-    /**
-     * 使用并发流，获取一个CAN消息
-     * @deprecated 任务过小，并发流实际上会增加线程开销，导致负优化
-     */
-    @Deprecated
-    private CanMessage getMsgFromDbcMap(int canId) {
-        final CanMessage[] msgs = new CanMessage[1];
-        msgs[0] = null ;
-        dbcMap.values().parallelStream().filter(dbc -> dbc.getMsg(canId) != null).forEach(dbc -> msgs[0] = dbc.getMsg(canId));
-        return msgs[0];
-    }
-    /**
-     * 更新数据模型中的数据至DBC中
-     * @param canId CanId
-     * @deprecated 任务过小，并发流实际上会增加线程开销，导致负优化
-     */
-    @Deprecated
-    public void updateModelToDbc(int canId) {
-        /* 1.  找到交换数据的双方 。字段和DBC*/
-        CanMessage msg = getMsgFromDbcMap(canId);
-        if (msg == null){
-            return;
-        }
-        Map<String, CanSignal> signalMap = msg.getSignalMap();
-        signalMap.values().parallelStream().filter(CanSignal::isFieldBind).forEach(signal -> {
-            Field field = signal.getField();/* 2. 拿到字段 */
-            Object model = signal.getDataModel(); // 原始对象
-            //double sigValue = signal.currentValue ; /* 3. 拿到DBC的数据 */
-            /* 4. 将 字段中的数据刷写到DBC中 */
-            signal.currentValue = FieldChanger.getFieldValue(field,model); // 弃用
-        });
-    } // updateModelToDbc
-
-    /**
-     * 更新DBC的数据至数据模型中
-     * @param canId canId
-     * @deprecated 任务过小，并发流实际上会增加线程开销，导致负优化
-     */
-    @Deprecated
-    public void updateDbcToModel(int canId) {
-        /* 1.  找到交换数据的双方 。字段和DBC*/
-        CanMessage msg = getMsgFromDbcMap(canId);
-        if (msg == null){
-            return;
-        }
-        Map<String, CanSignal> signalMap = msg.getSignalMap();
-        signalMap.values().parallelStream().filter(CanSignal::isFieldBind).forEach(signal -> {
-            Field field = signal.getField();/* 2. 拿到字段 */
-            Object model = signal.getDataModel(); // 原始对象
-            double sigValue = signal.currentValue ; /* 3. 拿到DBC的数据(弃用) */
-            /* 4. 将 DBC中数据 刷写道 字段中 */
-            FieldChanger.setFieldValue(field, model, sigValue);
-        });
-    } // 更新DBC的数据至数据模型中
 }

@@ -1,9 +1,8 @@
 package Demo;
 
-public class DemoData {
+public class DemoDataTest {
     public static final String TEST_DBC = "testDbc";
     public static final String TEST_DBC2 = "testDbc2";
-    // E:\storge\very\code\IntelliJ_IDEA_Project\QuickCanResolver\src\main\resources\DBC\Example.dbc
     public static final String DBC_PATH = "src/main/resources/DBC/Example.dbc" ;
     public static final String DBC_PATH2 = "src/main/resources/DBC/Example2.dbc" ;
     static final int msg1_Id = 0x18AB_AB01 ; // message1

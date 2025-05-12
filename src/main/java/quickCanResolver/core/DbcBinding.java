@@ -11,6 +11,10 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface DbcBinding {
+    /**
+     * dbc的数组集合
+     * @return dbc的数组集合
+     */
     Dbc[] value();
 
     // 注解中只可以注解编译时常量，不可注解运行时常量，这一点和 switch 的用法一致，只能是编译时常量。

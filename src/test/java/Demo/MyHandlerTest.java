@@ -1,6 +1,6 @@
 package Demo;
 
-public abstract class MyHandler {
+public abstract class MyHandlerTest {
     public void sendMessage(){
 
     }

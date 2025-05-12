@@ -6,14 +6,14 @@ import org.junit.Test;
 
 import java.lang.ref.WeakReference;
 
-import static Demo.DemoData.data8_;
-import static Demo.DemoData.msg1_Id;
+import static Demo.DemoDataTest.data8_;
+import static Demo.DemoDataTest.msg1_Id;
 
-public class Demo3Test extends MyActivity {
+public class Demo3Test extends MyActivityTest {
     // 1. 初始化兼容层框架
     CanIo canIo = CanIo.getInstance();
     // 2. 完成 数据模型的初始绑定
-    CarDataModel oldModel = canIo.manager.bind(CarDataModel.class);
+    CarDataModelTest oldModel = canIo.manager.bind(CarDataModelTest.class);
     {
         // 初始化数据，也可以不初始化
         canIo.manager.deCode_B(msg1_Id, data8_);
@@ -39,16 +39,16 @@ public class Demo3Test extends MyActivity {
 
 
         // 从Demo1 到Demo2 ，再到Demo3，这里更进一步实现了解耦。有了兼容层 CanIo之后，和底层的交互只需要一个适配器即可。
-        canIo.register(McuAdapter.class , new CanListenService() {
+        canIo.register(McuAdapterTest.class , new CanListenService() {
             @Override
-            public void listened(int canId) {
+            public void listened(int canId , byte[] data8) {
                 // 3. 解析数据后执行后续操作。
                 // 在适配器中完成了数据的解析，这里只需也要关注 canid 即可
                 // 实际的CAN接收监听在这里。根据不同的CANID，拿到数据 model 进行界面的刷新。
                 // CarDataModel oldModel = canIo.manager.getModel(CarDataModel.class); // 获取原来绑定的初始对象
                 if (canId == msg1_Id){
                     // 或者获取一个新的对象。（首先你需要根据ID判断数据是否有刷新）
-                    CarDataModel newModel = canIo.manager.createNewModel(CarDataModel.class);
+                    CarDataModelTest newModel = canIo.manager.createNewModel(CarDataModelTest.class);
                     System.out.println("Model Value = " + newModel.getMsg1Value());  //打印值
                     /* 更新数据打印如下
                      *  newModel Value =
@@ -91,11 +91,11 @@ public class Demo3Test extends MyActivity {
         // 调用服务，完成模拟数据发送
         canIo.send(msg1_Id);
         // 产生报文 = [11, 12, 13, 14, 217, 121, 194, 110] 正确
-        CarDataModel dataModel = canIo.manager.getModel(CarDataModel.class);
+        CarDataModelTest dataModel = canIo.manager.getModel(CarDataModelTest.class);
         // ...省略更改界面的代码
     }
 
-    public static class HandlerImp extends MyHandler{
+    public static class HandlerImp extends MyHandlerTest {
         WeakReference<Demo3Test> ref ;
         public HandlerImp(Demo3Test myActivity){
             ref = new WeakReference<>(myActivity) ;
@@ -106,7 +106,7 @@ public class Demo3Test extends MyActivity {
             // 在这里接收 子线程 发来的事件请求，并处理，例如更新界面，发送报文等操作。
             activity.event();
             CanIo canIo = CanIo.getInstance();
-            CarDataModel newModel = canIo.manager.createNewModel(CarDataModel.class);
+            CarDataModelTest newModel = canIo.manager.createNewModel(CarDataModelTest.class);
         }
     }
 }

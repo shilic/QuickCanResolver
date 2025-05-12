@@ -4,7 +4,7 @@ package quickCanResolver.core;
 import java.lang.annotation.*;
 
 /**
- * 用于绑定信号。<br>
+ * 注解，用于绑定信号。<br>
  *  messageId : int = CAN报文的ID，如0x18ABAB01 <br>
  *  signalTag : String = CAN信号在dbc文件中的名称，需要保持一致。 <br>
  */
@@ -23,6 +23,7 @@ public @interface CanBinding {
 
     /**
      * CAN信号在dbc文件中的名称，需要保持一致。
+     * @return tag
      */
     String signalTag() ;
 }

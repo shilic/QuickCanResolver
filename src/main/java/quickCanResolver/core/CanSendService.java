@@ -1,8 +1,14 @@
 package quickCanResolver.core;
 
-/** CAN输出服务 */
+/** CAN发送服务 */
 public interface CanSendService {
-    /** 编码CAN数据，并输出 */
-    public void send(int canId, int[] data8);
-    public void send(int canId);
+    /** 手动发送一组报文
+     * @param canId canId
+     * @param data8 8位数组的报文
+     * */
+    void send(int canId, byte[] data8);
+    /** 根据id发送报文
+     * @param canId canId
+     * */
+    void send(int canId);
 }

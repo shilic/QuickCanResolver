@@ -31,12 +31,10 @@ public class FieldChanger {
             else if (fieldType.equals(Float.TYPE)){
                 field.setFloat(model, (float) sigValue);
             }
-
             else {
                 throw new RuntimeException(ERR_INFO);
             }
-        }catch (IllegalAccessException e){
-            e.printStackTrace();
+        } catch (IllegalAccessException e){
             throw new RuntimeException(ERR_INFO);
         }
 

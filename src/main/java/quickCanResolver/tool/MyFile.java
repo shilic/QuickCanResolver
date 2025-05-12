@@ -34,7 +34,9 @@ public class MyFile {
         }
     }
 
-    /** 得到一个不重复的文件链接 */
+    /** 得到一个不重复的文件链接
+     * @param filePath 文件链接
+     * */
     public static String newFilePath(String filePath) {
         File file = new File(filePath);
         if (file.exists()) { //判断文件是否存在

@@ -5,7 +5,7 @@ import quickCanResolver.core.CanCopyable;
 import quickCanResolver.core.DbcBinding;
 
 @DbcBinding({
-        @DbcBinding.Dbc(dbcTag = DemoData.TEST_DBC, dbcPath = DemoData.DBC_PATH),
+        @DbcBinding.Dbc(dbcTag = DemoDataTest.TEST_DBC, dbcPath = DemoDataTest.DBC_PATH),
 })
 public class ExampleDataModel3  implements CanCopyable<ExampleDataModel3>, Cloneable {
     @CanBinding(signalTag = "msg6_sig1")

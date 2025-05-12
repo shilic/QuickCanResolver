@@ -27,6 +27,7 @@ public class DbcParse {
 
     /**
      * 从文件中获取DBC
+     * @param dbcTag 标签
      * @param filePath 文件路径
      * @return 返回一个DBC对象
      */
@@ -34,17 +35,20 @@ public class DbcParse {
         File file = new File(filePath);
         if(!file.exists()){ //如果文件不存在，退出
             //System.out.println("如果文件不存在，退出");
-            throw new RuntimeException("获取DBC文件发生错误，文件不存在"); // 由返回 null ，改为了抛出异常，可以更加明显的让外部使用者知道哪里发生了错误
+            throw new RuntimeException("获取DBC文件发生错误，文件不存在");
+            // 由返回 null ，改为了抛出异常，可以更加明显的让外部使用者知道哪里发生了错误
         }
         if(file.isDirectory()){//如果是目录，则退出
             //System.out.println("如果是目录，则退出");
             throw new RuntimeException("获取DBC文件发生错误，该文件是目录，而不是文件");
         }
-        String fileName = file.getName();   //获取文件完整名称,含后缀
+        String fileName = file.getName();
+        //获取文件完整名称,含后缀
         //获取文件扩展名
-        String fileExtension = fileName.substring(fileName.lastIndexOf("."));   //截取最后一个.之后的字符串 .xlsx  .dbc
+        String fileExtension = fileName.substring(fileName.lastIndexOf("."));
+        //截取最后一个.之后的字符串 .xlsx  .dbc
         //获取文件名 ， 不包含扩展名
-        if (!fileExtension.equals(".dbc")){ //不是DBC文件，退出  !fileExtension.equals("dbc")    !dbcMatcher.find()
+        if (!fileExtension.equals(".dbc")) {
             //System.out.println("不是DBC文件，退出");
             throw new RuntimeException("获取DBC文件发生错误，该文件不是DBC文件");
         }
@@ -104,7 +108,7 @@ public class DbcParse {
     /**
      * 解析信号，暂不支持报文分组。
      * @param line 传入单行数据，例如 : SG_ emb_forceSwitch_req : 8|1@1+ (1,0) [0|1] "" CanIOHandler    <br>
-     *   SG_ test_Signal_14 m2 : 24|8@1+ (0.1,-5.55) [-5|20.5] ""  CanIOHandler,CCS
+     *   例如 ： SG_ test_Signal_14 m2 : 24|8@1+ (0.1,-5.55) [-5|20.5] ""  CanIOHandler,CCS
      * @return 返回一个CAN信号 CanSignal
      */
     public static CanSignal parseSG(String line) {
@@ -188,7 +192,7 @@ public class DbcParse {
      * @param line 传入单行字符串，例如 : BO_ 2560107544 CCS7: 8 GW  ; BO_ 2147483921 MotorMessage: 8 Vector__XXX
      * @return 返回一个CAN消息 CanMessage
      */
-    public static CanMessage parseBO(String line){
+    public static CanMessage parseBO(String line) {
         line = line.trim();
         if ( ! line.startsWith("BO_")){
             throw new RuntimeException("DBC文件识别异常，该行不是CAN消息，原始line="+line);
@@ -223,9 +227,10 @@ public class DbcParse {
     /**
      * 根据id识别扩展帧和标准帧。<br>
      * 帧ID类型 标准帧 Standard 范围 0x0~0x7FF ; <br> 扩展帧 Extended 范围 0x0~0x1FFF_FFFF ;<br>
+     * @param msgID msgID
      * @return 返回报文ID的类型。 CANMsgIdType
      */
-    public static CANMsgIdType recognizeMsgID(long msgID){
+    public static CANMsgIdType recognizeMsgID(long msgID) {
         if (msgID > 0x7FF){
             return CANMsgIdType.Extended;
         }
@@ -255,7 +260,7 @@ public class DbcParse {
         }
         return nodeSet;
     }
-    protected DbcParse(){
+    protected DbcParse() {
 
     }
 }

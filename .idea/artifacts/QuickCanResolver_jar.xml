@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="QuickCanResolver:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/QuickCanResolver_jar</output-path>
-    <root id="archive" name="QuickCanResolver.jar">
-      <element id="module-output" name="QuickCanResolver" />
-    </root>
-  </artifact>
-</component>

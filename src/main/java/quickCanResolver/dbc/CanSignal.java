@@ -43,7 +43,8 @@ public class CanSignal {
     protected double iniValuePhys = 0;
     /** 总线初始值 */
     protected double iniValueHex = 0;
-    /** 当前信号的值 。TODO 如果采用 ViewModel，将没有 field
+    /** 当前信号的值 。
+     * @deprecated TODO 如果需要单独使用值，而不绑定模型，则使用该字段。
      * */
     @Deprecated
     public volatile double currentValue ;
@@ -51,7 +52,7 @@ public class CanSignal {
      * TODO 后续会在DBC协议的解析中增加无效值的判断规则，然后再这里直接集成。
      * */
     protected volatile boolean valid = true;
-    /**
+    /** 无效值
      * @deprecated TODO 后续增加无效值的解析，假如信号值等于该值的时候，直接让上边的 valid = false。
      * */
     @Deprecated
@@ -101,16 +102,6 @@ public class CanSignal {
         // 如果该信号没有绑定字段，那么 dataModel 和 field 自然就为空，也就会空指针异常。
         return null;
     }
-    /** 通过反射的方式，将字段值写入到传入的模型中。 */
-    @Deprecated
-    public boolean setFieldValue(double sigValue,Object newModel) {
-        if (! isFieldBind()) { // 如果这个信号没有绑定字段，则不写入值
-            return false;
-        }
-        FieldChanger.setFieldValue(field, newModel, sigValue);
-        return true;
-    }
-
     private double getFieldValue() {
         if (! isFieldBind()) { // 如果这个信号没有绑定字段
             return 0;

@@ -1284,7 +1284,7 @@ static byte[] data8_2 = new byte[]{7, 8, 9, 10, (byte) 211, 121, (byte) 200, 100
         * msg1_sig8 = 110.0}
         */
         System.out.println("oldModel  = " + oldModel + "\n");
-        // 打印 原始对象的 hash 码 Demo.CarDataModel@6ec8211c
+        // 打印 原始对象的 hash 码 Demo.CarDataModelTest@6ec8211c
 
         long startTime = System.currentTimeMillis();
         for (int i = 0 ; i < num ; i++) {
@@ -1304,8 +1304,8 @@ static byte[] data8_2 = new byte[]{7, 8, 9, 10, (byte) 211, 121, (byte) 200, 100
             * msg1_sig8 = 110.0}
             */
             //System.out.println("newModel  = " + newModel);
-            // 打印 新对象 的 hash 码 Demo.CarDataModel@7276c8cd
-            // 可见， Demo.CarDataModel@6ec8211c 和 Demo.CarDataModel@7276c8cd ；对象的hash码发生了变化，数据得到了更新
+            // 打印 新对象 的 hash 码 Demo.CarDataModelTest@7276c8cd
+            // 可见， Demo.CarDataModelTest@6ec8211c 和 Demo.CarDataModelTest@7276c8cd ；对象的hash码发生了变化，数据得到了更新
         }
         long endTime = System.currentTimeMillis();
         long timeCost = endTime - startTime;

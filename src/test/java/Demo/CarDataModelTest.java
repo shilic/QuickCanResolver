@@ -8,13 +8,13 @@ import quickCanResolver.core.DbcBinding;
  * 定义一个数据模型类，仅用于测试，除了最基本的数据模型外，不进行额外操作。
  *
  */
-//@DbcBinding(dbcTag = "testDbc", dbcPath = "E:\\storge\\very\\code\\IntelliJ_IDEA_Project\\QuickCanResolver\\src\\main\\resources\\DBC\\Example.dbc")
+
     // 嵌套注解，实现更为复杂的数据的注解，现在可以传入多个DBC给一个数据模型了。可以使用静态常量
 @DbcBinding({
-        @DbcBinding.Dbc(dbcTag = DemoData.TEST_DBC, dbcPath = DemoData.DBC_PATH),
-        @DbcBinding.Dbc(dbcTag = DemoData.TEST_DBC2, dbcPath = DemoData.DBC_PATH2)
+        @DbcBinding.Dbc(dbcTag = DemoDataTest.TEST_DBC, dbcPath = DemoDataTest.DBC_PATH),
+        @DbcBinding.Dbc(dbcTag = DemoDataTest.TEST_DBC2, dbcPath = DemoDataTest.DBC_PATH2)
 })
-public class CarDataModel implements CanCopyable<CarDataModel> , Cloneable {
+public class CarDataModelTest implements CanCopyable<CarDataModelTest> , Cloneable {
     @CanBinding(signalTag = "CabinToCCS1_FactoryID")
     int CabinToCCS1_FactoryID ;
     // 属性的名称可以不和dbc中的信号名称一致，名称定义取决于你。但，注解中标注的信号名称需要和DBC文件中定义的一致。
@@ -143,15 +143,15 @@ public class CarDataModel implements CanCopyable<CarDataModel> , Cloneable {
 
 
     @Override
-    public CarDataModel copyNew() {
+    public CarDataModelTest copyNew() {
         // TODO:(需要你自己实现 CanCopyable<T> 接口，并需要自己实现 拷贝方法，并返回自身 。下边的代码只是一个示例，你也可以采用其他拷贝方式。)
         return clone();
     }
 
     @Override
-    public CarDataModel clone() {
+    public CarDataModelTest clone() {
         try {
-            return (CarDataModel) super.clone();
+            return (CarDataModelTest) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException("克隆失败", e);
         }

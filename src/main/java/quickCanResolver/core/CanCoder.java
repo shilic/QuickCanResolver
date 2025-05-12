@@ -12,18 +12,22 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * CAN解编码器（执行者）。<br>用于处理报文的解码编码,构造器传入一个DBC对象，本类就负责针对报文对该DBC进行修改。<br>
- * 低耦合：此类只对 CanDbc 负责，不对其他类负责。由dbc类中的数据，解析报文，或者编码报文。
+ * CAN 编解码器（执行者）。
+ * <br>用于处理报文的解码编码,构造器传入一个DBC对象，本类就负责针对报文对该DBC进行修改。<br>
  */
+//低耦合：此类只对 CanDbc 负责，不对其他类负责。由dbc类中的数据，解析报文，或者编码报文。
 public class CanCoder {
     /** 持有一个 dbc 的 mspMap 。 用于执行报文的收发操作。*/
     protected final Map<Integer, CanMessage> msgMap;
+    /** 持有一个dbc */
     protected final CanDbc dbc ;
+    /** dbc 标签 */
     public final String dbcTag ;
     /** 定义锁的map，用于在写入字段的时候同步，确保相同的报文，同一时间只有一个线程在写入字段。
      * 而不同报文，则用不同的锁来保证同步。不同报文因为是不同的数据，故可以多线程同时操作。
      * */
     protected Map<Integer,ReentrantLock> msgWriteLockMap ;
+    /** 构造函数，传入一个 dbc  */
     public CanCoder(CanDbc dbc){
         // 传入一个DBC对象，用于后续修改
         this.dbc = dbc;
@@ -33,8 +37,8 @@ public class CanCoder {
     }
 
     /**
-     * 接收数据，解码报文。 将接收到的CAN报文，解析后存入绑定好的数据模型中。<br>
-     * 8 --> 64 --> signal --> field
+     * 接收数据，解码报文。
+     * <br>将接收到的CAN报文，解析后存入绑定好的数据模型中。<br>
      * @param canId 报文id
      * @param data8 8位数组的CAN报文,Byte数组格式。
      */
@@ -55,11 +59,12 @@ public class CanCoder {
     }
 
     /**
-     * 编码数据，发送报文。将数据模型的字段，解析后得到一个CAN报文数组。<br>
-     * field --> 64 --> 8
+     * 编码数据，发送报文。
+     * <br>将数据模型的字段，解析后得到一个CAN报文数组。<br>
      * @param canId 报文id
      * @return 8位数组的CAN报文。int数组格式。
      */
+    @SuppressWarnings("unused")
     public int[] enCode_I(int canId) {
         CanMessage sendMsg = msgMap.get(canId);
         if (sendMsg == null){
@@ -72,12 +77,31 @@ public class CanCoder {
         }
         return SLCTool.from64bitsTo8BytesI(data64, SLCTool.DataType.Intel); // 64 --> 8
     }
+    /**
+     * 编码数据，发送报文。
+     * <br>将数据模型的字段，解析后得到一个CAN报文数组。<br>
+     * @param canId 报文id
+     * @return 8位数组的CAN报文。
+     */
+    public byte[] enCode_B(int canId) {
+        CanMessage sendMsg = msgMap.get(canId);
+        if (sendMsg == null){
+            return new byte[8]; // 传一个全是0的回去
+        }
+        byte[] data64 = new byte[64];
+        // field --> 64 ; 循环，逐个将信号的值解析出来，并加载到数组对应的位中。
+        for (CanSignal signal : sendMsg.getSignalMap().values()) {
+            sigToBits64(data64,signal.readValue() , signal.getStartBit(), signal.getBitLength(), signal.getFactor() , signal.getOffset() ,signal.getByteOrder());
+        }
+        return SLCTool.from64bitsTo8Bytes(data64, SLCTool.DataType.Intel); // 64 --> 8
+    }
 
     /**
-     * 在写入字段（解码报文）的时候，加锁写入。
+     * 在写入字段（解码报文）的时候，加锁写入。程序默认不加锁。
      * @param canId 报文id
      * @param data8 8位数组的CAN报文
      */
+    @SuppressWarnings("unused")
     public void syncDeCode_B(int canId, byte[] data8) {
         // 拿到id之后，需要到DBC文件中查询对应的对象。然后修改这个对象
         CanMessage msg = msgMap.get(canId);
@@ -115,9 +139,9 @@ public class CanCoder {
      * @param bitLength 数据项的 bit 长度
      * @param factor 精度
      * @param offset 偏移量
-     * TODO  此函数存在非常大的问题需要适配，根据精度偏移量计算实际值，有可能返回 int 或是 Double 类型的数据，
-     *       还有可能返回 null （只有用Double接收的时候会返回null），即0xFF时需要做提醒。适配起来太麻烦了，我疲倦了。
      */
+    /* TODO  此函数存在非常大的问题需要适配，根据精度偏移量计算实际值，有可能返回 int 或是 Double 类型的数据，
+     *       还有可能返回 null （只有用Double接收的时候会返回null），即0xFF时需要做提醒。适配起来太麻烦了，我疲倦了。 */
     private double bits64ToValue(byte[] data64, CanSignal signal, int startBit , int bitLength , double factor , double offset ) {
         //System.out.println("待计算值，startBit = " + startBit +" ;  bitLength = "+bitLength+" ;  factor = " + factor + " ; offset = " + offset) ;
         int rawValue ; //总线值，未处理值
@@ -146,7 +170,7 @@ public class CanCoder {
      * @param doubleValue 输入一个 double 类型的数据
      * @return 返回是否是整型数
      */
-    public static boolean isInteger(double doubleValue) {
+    private static boolean isInteger(double doubleValue) {
         return doubleValue % 1 == 0;
     }
     /**
@@ -156,7 +180,7 @@ public class CanCoder {
      * @param bitLength 该整型数的有效长度
      * @return 返回是否全为1,
      */
-    public static boolean checkAllOnes(int number, int bitLength) {
+    private static boolean checkAllOnes(int number, int bitLength) {
         // 构造一个掩码，掩码的长度等于 bitLength，且所有位均为 1
         int mask = (1 << bitLength) - 1;
 
@@ -203,6 +227,10 @@ public class CanCoder {
             return SLCTool.DataType.Motorola;
         }
     }
+
+    /**
+     * 将正文转换成单个出口点形式
+     */
     @SuppressWarnings("unused")
     public static CANByteOrder transOrder(SLCTool.DataType instanceByteOrder) {
         if (instanceByteOrder == SLCTool.DataType.Intel){
@@ -213,111 +241,4 @@ public class CanCoder {
         }
     }
 
-    /* 以下函数 均被弃用。因为每次解析报文实际上是每次的计算量很小，只有64bit的计算量。
-    * 同时，由于任务大小很小，开启线程不会带来明显性能提升，反而可能因线程切换增加开销。
-    * 同时，因为任务次数很多，线程会频繁的切换，导致性能下降。
-    *
-    * 经过测试：采用了并发流来处理报文时，一千帧报文，平均耗时200毫秒。而采用单线程，一千帧，不采用并发流的平均耗时是10毫秒。
-    * 可见，过早地优化确实是罪恶之源。当线程切分得太小时，反而不适合使用多线程进行处理；采用单线程反而可以提高效率。
-    * 线程划分的颗粒度，还是需要实际测试了之后，才能知晓结果。
-    *  */
-    /**
-     * 根据新的报文 ， 刷新数据模型的字段值<br>
-     * 8 --> 64 --> signal --> newModel
-     * @param canId canId
-     * @param data8 8 字节的数组数据
-     * @param newModel 需要刷新的字段
-     */
-    @Deprecated
-    public void updateObj_B(int canId, byte[] data8,Object newModel) {
-        CanMessage msg = msgMap.get(canId);
-        if (msg == null){
-            return;
-        }
-        // 8 -->64
-        byte[] data64 = SLCTool.from8BytesTo64Bits(data8, SLCTool.DataType.Intel);
-        // 64 --> signal ;
-        for (CanSignal signal : msg.getSignalMap().values()) {
-            // 获取值之后，调用方法将数据写入到一个新的模型中，实现数据的刷新。
-            double phyValue = bits64ToValue(data64, signal, signal.getStartBit(), signal.getBitLength(), signal.getFactor(), signal.getOffset());
-            // TODO  注意，此方法存在问题，通过id确定信号后，再刷新数据到模型中，字段是和 signal 绑定了，但是新的模型是否正确是不确定的。
-            //     * 模型中是否存在这个字段，需要验证。我在考虑要不要校验，因为校验会增加程序的运行时间。不正确的话或者干脆在写入的时候报错就好了。
-//            if (! signal.checkModelType(newModel)) {
-//                continue; // 校验，如果模型不正确就不写入
-//            }
-            signal.setFieldValue(phyValue,newModel) ; // 通过反射的方式，将字段值写入到传入的模型中。
-            /*提示（勿删）：实际上在运用过程中，确实有可能出现，一帧报文绑定多个模型的情况出现，这个时候，这个函数就不适用了，因为这个函数的作用就是用于输出单个数据模型。
-             * 况且在实际应用中，最好是细分DBC和数据模型，确保一个 canId 只输出一个模型，这样在运用到 LiveData 时，也会更方便。你也不想，多输入多输出吧，参数可变就太麻烦了。
-             *  */
-        }
-    }
-    @Deprecated
-    public void concurrentCanToField(int canId, byte[] data8){
-        concurrentCanDataToDbc(canId, data8);
-    }
-    @Deprecated
-    public int[] concurrentFieldToCan(int canId){
-        return concurrentDbcToCanData(canId); // concurrentFieldToCan
-    }
-    /* 以下是监听函数 ，用于解析CAN报文 */
-    /**
-     * 将报文数据解析到DBC中
-     * @param canId id
-     * @param data8 8位的报文数组
-     */
-    @Deprecated
-    public void concurrentCanDataToDbc(int canId, byte[] data8){
-        if (msgMap == null){
-            return;
-        }
-        /* 接受到的8*8的CAN数据矩阵，共64个bit */
-        byte[] data64; //接收到的数据
-        data64 = SLCTool.from8BytesTo64Bits(data8, SLCTool.DataType.Intel); // 8 -->64
-        // 拿到id之后，需要到DBC文件中查询对应的对象。然后修改这个对象
-        CanMessage msg = msgMap.get(canId);
-        if (msg == null){
-            return;
-        }
-        //System.out.println("正在解析接收报文，解析报文 ID = " + SLCTool.toHexString(canId));
-        // 遍历消息，取出数组值,并修改所有的消息值 。可用线程池或者并行流优化。可以考虑使用并行流（parallelStream()）来简化代码。并行流会自动处理并发执行，并且代码会更加简洁。
-        msg.getSignalMap().values().parallelStream().forEach(
-                signal ->{
-                    double phyValue = bits64ToValue(data64, signal, signal.getStartBit(), signal.getBitLength(), signal.getFactor(), signal.getOffset());
-                    signal.writeValue(phyValue);
-                }
-        ); // 64 --> signal
-    }
-    /* 以下是发送函数 */
-    /**
-     * 从Dbc中，获取8位byte的数据数组。<br>将64bits的数据转换成8个byte的数组。
-     * @return 8位byte的数据数组
-     */
-    @Deprecated
-    public int[] concurrentDbcToCanData(int sendId) {
-        if (msgMap == null){
-            return new int[8];
-        }
-        byte[] src = concurrentSigTo64Bits(sendId); // 第一步，signal --> 64
-        int[] re;
-        re = SLCTool.from64bitsTo8BytesI(src, SLCTool.DataType.Intel); // 64 --> 8
-        return re;
-    }
-    /**
-     * signal --> 64.获取64bit的数据。将成员变量的数据变成64bits的数组。<br>
-     * 根据id的不同，获取不同的发送报文。
-     * @return 返回64bits的数据
-     */
-    @Deprecated
-    public byte[] concurrentSigTo64Bits(int sendId) {
-        //System.out.println("正在解析发送报文，发送报文 ID = " + SLCTool.toHexString(sendId));
-        byte[] sendCanData = new byte[64];
-        CanMessage sendMsg = msgMap.get(sendId);
-        if (sendMsg == null){
-            return sendCanData; // 传一个全是0的回去
-        }
-        /* 将对象中的数据转换至数组中。使用流式操作优化代码,并发的方式提高程序效率。多线程修改 sendCanData，可能会出现线程安全问题。但由于修改的是数组 sendCanData 的不同下标，理论上不会出现问题。 */
-        sendMsg.getSignalMap().values().parallelStream().forEach(sig ->
-                sigToBits64(sendCanData,sig.readValue() , sig.getStartBit(), sig.getBitLength(), sig.getFactor() , sig.getOffset() ,sig.getByteOrder())   );
-        return sendCanData;
-    }
-}
+} // CAN 编解码器（执行者）。

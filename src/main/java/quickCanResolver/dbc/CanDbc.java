@@ -11,22 +11,13 @@ import java.util.Set;
 public class CanDbc {
     /** 节点列表 Set集合不重复*/
     protected Set<String> canNodeSet;
-    /** 消息列表 。键记录消息ID值，值记录消息的对象 LinkedHashMap ，记录的是 newMsgIDCode，注意*/
+    /** 消息列表 。键记录消息ID值，值记录消息的对象 LinkedHashMap ，记录的是 newMsgIDCode */
     protected final Map<Integer, CanMessage> intMsgMap;
+    /**
+     * 标签
+     */
     public final String dbcTag ;
 
-
-    //protected Object dataModel ;
-
-
-//    public void bindModel(Object dataModel) {
-//        this.dataModel = dataModel;
-//        this.modelBind = true ;
-//    }
-//    public void clearModel() {
-//        modelBind = false ;
-//        dataModel = null ;
-//    }
     /**
      * 根据Map插入顺序获取 DBC Message对象。实际用于在添加信号sig时，获取刚插入的消息msg。并将sig添加到msg中。
      * @param index 你想要获取的索引值
@@ -98,6 +89,7 @@ public class CanDbc {
      * 获取节点信息，用于调试
      * @return 返回字符串
      */
+    @SuppressWarnings("unused")
     public String getCanNodeInfo(){
         return canNodeSet.toString();
     }
@@ -117,6 +109,7 @@ public class CanDbc {
      * 获取CAN通道所有报文信息。
      * @return 返回字符串
      */
+    @SuppressWarnings("unused")
     public String getChannelInfo(){
         StringBuilder builder = new StringBuilder();
         for (Map.Entry<Integer, CanMessage> entry : intMsgMap.entrySet()){
@@ -146,7 +139,4 @@ public class CanDbc {
         return intMsgMap;
     }
 
-//    public Object getDataModel() {
-//        return dataModel;
-//    }
-}  ///class CANChannels
+}  //class CANChannels

@@ -5,15 +5,15 @@ import quickCanResolver.core.CanListenService;
 import quickCanResolver.core.McuService;
 
 /** 因为为了适配第三方组件McuCan。故采用适配器模式，用于适配不同的底层实现。上层直接使用接口，底层变动，上层不需要变动。 */
-public class McuAdapter implements McuService {
+public class McuAdapterTest implements McuService {
     // 最终交给底层的 McuCan 来实现。
-    McuCan mcuCan = McuCan.getInstance(); //第三方组件。不可变动。 同时，第三方的组件和现有的接口有所不同，故采用适配器模式，适配现有接口。
+    McuCanTest mcuCan = McuCanTest.getInstance(); //第三方组件。不可变动。 同时，第三方的组件和现有的接口有所不同，故采用适配器模式，适配现有接口。
     McuCanListenerEvent listenerEvent ;
-    public McuAdapter() {
+    public McuAdapterTest() {
     }
 
     @Override
-    public void nativeSend(int canId, int[] data8) {
+    public void nativeSend(int canId, byte[] data8) {
         // 最终调用了本地的方法来实现报文的发送
         mcuCan.nativeSendCanData(canId, data8);
     }
@@ -29,7 +29,7 @@ public class McuAdapter implements McuService {
     public void nativeUnRegister(CanListenService canListener) {
         mcuCan.unregisterCan(listenerEvent);
     }
-    public static class McuCanListenerEvent implements McuCan.McuCanListener{
+    public static class McuCanListenerEvent implements McuCanTest.McuCanListener {
         CanListenService canListener;
         public McuCanListenerEvent(CanListenService canListener){
             this.canListener = canListener;
@@ -40,7 +40,7 @@ public class McuAdapter implements McuService {
             // 首先进行数据的解析。
             CanIo.getInstance().manager.deCode_B(canId, data8);
             // 再回调从 Activity 传入的回调函数
-            canListener.listened(canId);
+            canListener.listened(canId, data8);
         }
     }
 }

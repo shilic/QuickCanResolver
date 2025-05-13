@@ -37,7 +37,12 @@ public interface CanManagerService {
      */
     byte[] enCode_B(int canId);
 
-
+    /**
+     * 添加一个 DBC输入接口
+     * @param dbcInputInterface DBC输入接口
+     * @return 返回自身，便于链式调用
+     */
+    CanManagerService addDbcInputInterface(DbcInputInterface dbcInputInterface);
 
     /**
      * 取消注册DBC

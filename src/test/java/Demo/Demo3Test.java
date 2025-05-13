@@ -3,7 +3,11 @@ package Demo;
 import quickCanResolver.core.CanIo;
 import quickCanResolver.core.CanListenService;
 import org.junit.Test;
+import quickCanResolver.core.DbcInputInterface;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 
 import static Demo.DemoDataTest.data8_;
@@ -13,7 +17,16 @@ public class Demo3Test extends MyActivityTest {
     // 1. 初始化兼容层框架
     CanIo canIo = CanIo.getInstance();
     // 2. 完成 数据模型的初始绑定
-    CarDataModelTest oldModel = canIo.manager.bind(CarDataModelTest.class);
+    CarDataModelTest oldModel = canIo.manager.addDbcInputInterface(new DbcInputInterface() {
+        @Override
+        public InputStream getInputStream(String dbcFilePath) {
+            try {
+                return new FileInputStream(dbcFilePath);
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }).bind(CarDataModelTest.class);
     {
         // 初始化数据，也可以不初始化
         canIo.manager.deCode_B(msg1_Id, data8_);

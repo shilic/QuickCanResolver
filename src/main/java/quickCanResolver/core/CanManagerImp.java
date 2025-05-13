@@ -3,6 +3,8 @@ package quickCanResolver.core;
 import quickCanResolver.dbc.CanSignal;
 import quickCanResolver.dbc.CanDbc;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -20,6 +22,7 @@ public class CanManagerImp implements CanManagerService {
     private static volatile CanManagerImp canManagerImp;
     /** 绑定数据模型 */
     protected Map<Class<?>,Object> modelMap ;
+    protected DbcInputInterface dbcInputInterface;
 
 
     /**框架最主要方法 ： 绑定 dbc <br>
@@ -40,6 +43,7 @@ public class CanManagerImp implements CanManagerService {
         modelMap.putIfAbsent(clazz,instance);
         // 给 dbc 中的 CanSignal 绑定字段 ，以及模型
         bindModelAndField(clazz,instance);
+        System.out.println("Manager：绑定完成, class = " + clazz.getName());
         return instance; // 返回实例化之后的数据模型
     }
     /**框架最主要方法 ： 绑定 dbc <br>
@@ -60,6 +64,7 @@ public class CanManagerImp implements CanManagerService {
         modelMap.putIfAbsent(clazz,model);
         // 给 dbc 中的 CanSignal 绑定字段 ，以及模型
         bindModelAndField(clazz,model);
+        System.out.println("Manager：绑定完成, class = " + clazz.getName());
         return model;
     }
 
@@ -92,9 +97,9 @@ public class CanManagerImp implements CanManagerService {
             if (dbcMap.containsKey(dbcTag)) {
                 continue;
             }
-            // 生成 dbc ，并添加到map中。即初始化一个Dbc文件
+            // 生成 dbc ，并添加到map中。即初始化一个Dbc文件 //addDbcToMap(dbcTag,dbcFilePath);
             addDbcToMap(dbcTag,dbcFilePath);
-            System.out.println("DBC绑定成功，dbcTag = " + dbcTag + ", dbcFilePath = " + dbcFilePath);
+            System.out.println("Manager：DBC绑定成功，dbcTag = " + dbcTag + ", dbcFilePath = " + dbcFilePath);
         } // 循环，遍历多个DBC文件
         return true;
     }
@@ -140,10 +145,20 @@ public class CanManagerImp implements CanManagerService {
      * @return 返回一个生成的  dbc
      */
     private CanDbc addDbcToMap(String dbcTag, String dbcFilePath) {
-        //生成一个 DBC
-        CanDbc dbc = DbcParse.getDbcFromFile(dbcTag,dbcFilePath);
-        dbcMap.put(dbcTag,dbc);
-        return dbc;
+        // 如果没有定义接口，就直接从路径获取。
+        if (dbcInputInterface == null) {
+            CanDbc dbc = DbcParse.getDbcFromFilePath(dbcTag,dbcFilePath);
+            dbcMap.put(dbcTag,dbc);
+            return dbc;
+        }
+        // 如果定义了接口，就从接口获取 inputStream
+        try ( InputStream inputStream = dbcInputInterface.getInputStream(dbcFilePath) ) {
+            CanDbc dbc = DbcParse.getDbcFromInputStream(dbcTag, inputStream);
+            dbcMap.put(dbcTag, dbc);
+            return dbc;
+        } catch (IOException e) {
+            throw new RuntimeException("获取DBC文件发生错误，IO异常");
+        }
     }
 
     /**
@@ -227,7 +242,7 @@ public class CanManagerImp implements CanManagerService {
      * @param model 定义好绑定关系的数据模型
      * @return 返回绑定的dbc
      */
-    @SuppressWarnings("unused")
+
     private static String[] findDbcTagsFromModel(Object model) {
         Class<?> clazz = model.getClass();
         return findDbcTagsFromClass(clazz);
@@ -352,6 +367,17 @@ public class CanManagerImp implements CanManagerService {
     }
 
     /**
+     * 添加DBC输入接口
+     * @param dbcInputInterface  DBC输入接口
+     * @return 返回自身，便于链式调用
+     */
+    @Override
+    public CanManagerService addDbcInputInterface(DbcInputInterface dbcInputInterface) {
+        this.dbcInputInterface = dbcInputInterface;
+        System.out.println("Manager：DBC输入接口 DbcInputInterface 绑定完成");
+        return this;
+    }
+    /**
      * 取消注册DBC
      * @param dbcTag  对应的DBC标签
      */
@@ -359,6 +385,7 @@ public class CanManagerImp implements CanManagerService {
     public void clearDBC(String dbcTag){
         dbcMap.remove(dbcTag);
         canCoderMap.remove(dbcTag);
+        System.out.println("Manager：清理完成DBC："+dbcTag);
     }
 
     /**
@@ -368,6 +395,7 @@ public class CanManagerImp implements CanManagerService {
     public void clearAllDbc(){
         dbcMap.clear();
         canCoderMap.clear();
+        System.out.println("Manager：清理完成所有DBC");
     }
     /**
      * 清理所有注册项
@@ -376,7 +404,7 @@ public class CanManagerImp implements CanManagerService {
     public void clear() {
         clearAllDbc();
         modelMap.clear();
-        System.out.println("清理完成所有绑定关系");
+        System.out.println("Manager：清理完成所有绑定关系");
     }
 
 }

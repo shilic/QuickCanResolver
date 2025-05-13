@@ -64,7 +64,7 @@ public class CanCoder {
      * @param canId 报文id
      * @return 8位数组的CAN报文。int数组格式。
      */
-    @SuppressWarnings("unused")
+
     public int[] enCode_I(int canId) {
         CanMessage sendMsg = msgMap.get(canId);
         if (sendMsg == null){
@@ -101,7 +101,7 @@ public class CanCoder {
      * @param canId 报文id
      * @param data8 8位数组的CAN报文
      */
-    @SuppressWarnings("unused")
+
     public void syncDeCode_B(int canId, byte[] data8) {
         // 拿到id之后，需要到DBC文件中查询对应的对象。然后修改这个对象
         CanMessage msg = msgMap.get(canId);
@@ -196,7 +196,7 @@ public class CanCoder {
      * @param startBit  起始位
      * @param bitLength 数据长度
      */
-    @SuppressWarnings("unused")
+
     private void sigToBits64(byte[] sendCanData, int instanceValue, int startBit , int bitLength, CANByteOrder instanceByteOrder ) {
         SLCTool.DataType inputType = transOrder(instanceByteOrder);
         byte[] src = SLCTool.intToBits(instanceValue,inputType,bitLength)  ;  //将总线值变成 0或者1 的数组
@@ -231,7 +231,7 @@ public class CanCoder {
     /**
      * 将正文转换成单个出口点形式
      */
-    @SuppressWarnings("unused")
+
     public static CANByteOrder transOrder(SLCTool.DataType instanceByteOrder) {
         if (instanceByteOrder == SLCTool.DataType.Intel){
             return CANByteOrder.Intel;

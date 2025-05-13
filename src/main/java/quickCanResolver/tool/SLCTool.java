@@ -29,7 +29,7 @@ public class SLCTool {
      * @param value 输入一段字符串
      * @return 如果是word类型则返回真，如果不是则返回假
      */
-    @SuppressWarnings("unused")
+       
     public static boolean isWord(String value){
         if (value !=null && value.length()<wordLength){
             return Pattern.matches(isWordRegex,value);  // "\\b[a-zA-Z_]+\\w*"
@@ -43,7 +43,7 @@ public class SLCTool {
      * @param wordLength 指定字符长度
      * @return 如果是word类型则返回真，如果不是则返回假
      */
-    @SuppressWarnings("unused")
+       
     public static boolean isWord(String value , int wordLength) {
         if (value !=null && value.length()<wordLength){
             return Pattern.matches(isWordRegex,value);  // "\\b[a-zA-Z_]+\\w*"
@@ -61,7 +61,7 @@ public class SLCTool {
      * @param type 数据类型 "motorola":大端模式,数据高位存放数组低位 ; "intel" :低位存放至数组低位
      * @return bit数组，每一个表示一个bit。例如15 变成 {1,1,1,1} 。
      */
-    @SuppressWarnings("unused")
+       
     public static byte[] intToBits(int data,DataType type){
         int a = data;
         byte[] bitArray;
@@ -113,7 +113,7 @@ public class SLCTool {
      * @param type 要转换的类型  "motorola":大端模式,数据高位存放数组低位 ; "intel" :低位存放至低位
      * @return 32个bits数组
      */
-    @SuppressWarnings("unused")
+       
     public static byte[] intTo32Bits(int data,DataType type){
         byte[] re = new byte[32];  //例如传入一个4位字节数组，那么长度就是32个bit
         switch (type){
@@ -138,7 +138,7 @@ public class SLCTool {
      * @param type 要转换的类型  "motorola":大端模式,数据高位存放数组低位 ; "intel" :低位存放至低位
      * @return 4位byte数据 ，并用int表示
      */
-    @SuppressWarnings("unused")
+       
     public static int[] intTo4BytesI(int data, DataType type) {
         int[] ans = new int[4];
         switch (type) {
@@ -165,7 +165,7 @@ public class SLCTool {
      * @param length 指定长度
      * @return 4位byte数据
      */
-    @SuppressWarnings("unused")
+       
     public static byte[] intToBytes(int data, DataType type , int length)
     {
         byte[] ans = new byte[length];
@@ -195,7 +195,7 @@ public class SLCTool {
      * @param type 要转换的类型  "motorola":大端模式,数据高位存放数组低位 ; "intel" :低位存放至低位
      * @return 4位byte数据 ，并用byte表示
      */
-    @SuppressWarnings("unused")
+       
     public static byte[] intTo4Bytes(int data,DataType type) {  // 把int 转换成 4 位 bytes ; 高位放低位下标 0x18FFAB03
         byte[] ans = new byte[4];
         switch (type){
@@ -248,7 +248,7 @@ public class SLCTool {
      * @param length 指定长度
      * @return 返回一个bit的数组
      */
-    @SuppressWarnings("unused")
+       
     public static byte[] byteToBits(byte mByte, DataType type , int length) {
         byte[] bitArray = new byte[length];
         switch (type) {
@@ -275,7 +275,7 @@ public class SLCTool {
      * @param type 要转换的类型  "motorola":大端模式,数据高位存放数组低位 ; "intel" :低位存放至低位
      * @return 返回一个bit的数组
      */
-    @SuppressWarnings("unused")
+       
     public static byte[] bytesToBits(byte[] byteArray, DataType type) {
         byte[] bits = new byte[byteArray.length * 8];
         int currentIndex = 0;
@@ -296,7 +296,7 @@ public class SLCTool {
      * @param type  要转换的类型  "motorola":大端模式,数据高位存放数组低位 ; "intel" :低位存放至低位
      * @return  32位 的bit数组
      */
-    @SuppressWarnings("unused")
+       
     public static byte[] from4BytesTo32Bits(byte[] bytes, DataType type) {
         long t = from4bytesToLong(bytes,type);   //把4个byte组合成一个int
         byte[] re = new byte[32];  //例如传入一个4位字节数组，那么长度就是32个bit
@@ -421,7 +421,7 @@ public class SLCTool {
      * @param type 转换类型 "motorola":大端模式,数据高位存放数组低位 ; "intel" :低位存放至低位
      * @return 一个byte数据
      */
-    @SuppressWarnings("unused")
+       
     public static byte bitsToByte(byte[] bits, DataType type) {
         //传入8个bit 变成一个byte //低位在低位，高位在高位
         //int padLength = 8 - bits.Length;
@@ -435,7 +435,7 @@ public class SLCTool {
      * @param type 要转换的类型  "motorola":大端模式,数据高位存放数组低位 ; "intel" :低位存放至低位
      * @return 返回值 得到一个 int型整数 ,用 long来表示，可根据需要转换成 int
      */
-    @SuppressWarnings("unused")
+       
     public static long from32bitsToInt(byte[] bits, DataType type) {
         long re = 0x0000_0000L;
         switch (type){
@@ -507,7 +507,7 @@ public class SLCTool {
      * @param type 转换类型 "motorola":大端模式,数据高位存放数组低位 ; "intel" :低位存放至低位
      * @return  byte数组
      */
-    @SuppressWarnings("unused")
+       
     public static byte[] bitsToBytes(byte[] bits, DataType type )  {
         // 计算需要填充的位数,填充原数组至 8 的倍数，末尾填充0
         int padLength = (8 - (bits.length % 8)) % 8;
@@ -546,7 +546,7 @@ public class SLCTool {
      * @param type 要转换的类型  "motorola":大端模式,数据高位存放数组低位 ; "intel" :低位存放至低位
      * @return int 返回由这4位数组组成的int型数据
      */
-    @SuppressWarnings("unused")
+       
     public static int from4bytesToInt(byte[] bytes, DataType type) {
         int ans = 0;
         switch (type){
@@ -573,7 +573,7 @@ public class SLCTool {
      * @param type 要转换的类型  "motorola":大端模式,数据高位存放数组低位 ; "intel" :低位存放至低位
      * @return int 返回由这几位数组组成的int型数据
      */
-    @SuppressWarnings("unused")
+       
     public static int bytesToInt(byte[] bytes, DataType type) {
         int ans = 0;
         switch (type) {
@@ -628,7 +628,7 @@ public class SLCTool {
      * @param lower 数据低位
      * @return 合成一个int
      */
-    @SuppressWarnings("unused")
+       
     public static int from2byteToInt(byte high, byte lower){
         return ((high & 0x0000_00ff)<<8)|(lower & 0x0000_00ff);
     }
@@ -645,7 +645,7 @@ public class SLCTool {
      * @param data 传入数值类型数据
      * @return 返回16进制字符串。
      */
-    @SuppressWarnings("unused")
+       
     public static String toHexString(byte data){
         return "0x"+ String.format("%02X",data);
     }
@@ -654,7 +654,7 @@ public class SLCTool {
      * @param data 传入数值类型数据
      * @return 返回16进制字符串。
      */
-    @SuppressWarnings("unused")
+       
     public static String toHexString(short data){
         return "0x"+ String.format("%04X",data);
     }
@@ -671,7 +671,7 @@ public class SLCTool {
      * @param data 传入数值类型数据
      * @return 返回16进制字符串。
      */
-    @SuppressWarnings("unused")
+       
     public static String toHexString(long data){
         return "0x"+ String.format("%16X",data);
     }
@@ -680,7 +680,7 @@ public class SLCTool {
      * @param number 你要输入的double类型数值
      * @return 返回只保留一位小数的字符串
      */
-    @SuppressWarnings("unused")
+       
     public static String doubleToString(double number) {
         // 创建 DecimalFormat 对象，并设置保留两位小数的格式 #0.00; 一位小数 #0.0
         DecimalFormat decimalFormat = new DecimalFormat("#0.0");
@@ -694,7 +694,7 @@ public class SLCTool {
      * @param dot 小数点保留位数
      * @return String 类型
      */
-    @SuppressWarnings("unused")
+       
     private static String doubleToString(double value, int dot ) {
         StringBuilder patternSb = new StringBuilder();
         patternSb.append("0.");
@@ -715,7 +715,7 @@ public class SLCTool {
      * @param data 数值类型的数组
      * @return 16进制字符串
      */
-    @SuppressWarnings("unused")
+       
     public static String toHexString(byte[] data){ //传入一个字节数组，输出16进制字符串
         StringBuilder hexString = new StringBuilder();
         hexString.append("{");
@@ -730,7 +730,7 @@ public class SLCTool {
      * @param data 数值类型的数组
      * @return 16进制字符串
      */
-    @SuppressWarnings("unused")
+       
     public static String toHexString(short[] data){ //传入一个字节数组，输出16进制字符串
         StringBuilder hexString = new StringBuilder();
         hexString.append("{");
@@ -745,7 +745,7 @@ public class SLCTool {
      * @param data 数值类型的数组
      * @return 16进制字符串
      */
-    @SuppressWarnings("unused")
+       
     public static String toHexString(long[] data){ //传入一个字节数组，输出16进制字符串
         StringBuilder hexString = new StringBuilder();
         hexString.append("{");
@@ -760,7 +760,7 @@ public class SLCTool {
      * @param data 数值类型的数组
      * @return 16进制字符串
      */
-    @SuppressWarnings("unused")
+       
     public static String toHexString(int[] data){ //传入一个字节数组，输出16进制字符串
         StringBuilder hexString = new StringBuilder();
         hexString.append("{");

@@ -89,7 +89,7 @@ public class CanDbc {
      * 获取节点信息，用于调试
      * @return 返回字符串
      */
-    @SuppressWarnings("unused")
+
     public String getCanNodeInfo(){
         return canNodeSet.toString();
     }
@@ -109,7 +109,7 @@ public class CanDbc {
      * 获取CAN通道所有报文信息。
      * @return 返回字符串
      */
-    @SuppressWarnings("unused")
+
     public String getChannelInfo(){
         StringBuilder builder = new StringBuilder();
         for (Map.Entry<Integer, CanMessage> entry : intMsgMap.entrySet()){

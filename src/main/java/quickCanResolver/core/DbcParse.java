@@ -26,12 +26,111 @@ public class DbcParse {
             "\"(?<unit>[^\"]*)\"\\s*(?<nodeSet>[\\w,]+)";
 
     /**
+     * 由于java代码在安卓环境无法直接读取文件，所以新增一个从InputStream中读取文件并解析的方法
+     * @param dbcTag 标签
+     * @param inputStream 文件输入流，请在外部手动获取和关闭。
+     * @return 返回一个DBC对象
+     */
+    public static CanDbc getDbcFromInputStream(String dbcTag, InputStream inputStream) {
+        // 预加载空的数据
+        CanDbc dbc = CanDbc.getEmptyDbc(dbcTag);
+        Map<Integer, CanMessage> messagesMap = dbc.getIntMsgMap();
+        try (
+                // 因为DBC文件在windows下是GBK格式，故强制使用该格式。
+                InputStreamReader isr = new InputStreamReader(inputStream,"GBK");  //fis,"GBK"  fis
+                BufferedReader buffer = new BufferedReader(isr)
+        ){
+            // 解析一行数据
+            parseBuffer(dbc,messagesMap,buffer);
+        } catch (IOException e) { // IO异常，获取CanMessage时，可能会发生 ExcelSheetException 异常
+            throw new RuntimeException("获取DBC文件发生错误，IO异常");
+        }
+        //System.out.println(" CAN通道信息打印 = \n"+dbc.getChannelInfo());
+        return dbc;
+    }
+    /**
      * 从文件中获取DBC
      * @param dbcTag 标签
      * @param filePath 文件路径
      * @return 返回一个DBC对象
      */
-    public static CanDbc getDbcFromFile(String dbcTag,String filePath) {
+    public static CanDbc getDbcFromFilePath(String dbcTag, String filePath) {
+        if (! isFileDbc(filePath)) {
+            throw new RuntimeException("获取DBC文件发生错误，该文件不是DBC文件");
+        }
+        // 预加载空的数据
+        CanDbc dbc = CanDbc.getEmptyDbc(dbcTag);
+        Map<Integer, CanMessage> messagesMap = dbc.getIntMsgMap();
+        try (
+                FileInputStream fis = new FileInputStream(filePath);
+                // 因为DBC文件在windows下是GBK格式，故强制使用该格式。
+                InputStreamReader isr = new InputStreamReader(fis,"GBK");  //fis,"GBK"  fis
+                BufferedReader buffer = new BufferedReader(isr)
+        ){
+            // 解析一行数据
+            parseBuffer(dbc,messagesMap,buffer);
+        } catch (IOException e) { // IO异常，获取CanMessage时，可能会发生 ExcelSheetException 异常
+            throw new RuntimeException("获取DBC文件发生错误，IO异常");
+        }
+        //System.out.println(" CAN通道信息打印 = \n"+dbc.getChannelInfo());
+        return dbc;
+    } //getDbcFromFile
+
+    /**
+     * 解析一行数据
+     * @param dbc dbc
+     * @param messagesMap messagesMap
+     * @param buffer 一行数据
+     * @throws IOException 抛出IO异常
+     */
+    private static void parseBuffer(CanDbc dbc,Map<Integer, CanMessage> messagesMap,BufferedReader buffer) throws IOException {
+        String line;
+        /* 依次得到每行内容 每行开头的内容分为以下9种： BU_: 节点 ; BO_  消息; SG_ 信号; BO_TX_BU_ 消息传输节点;
+         * CM_ 注释; BA_DEF_ 自定义属性的定义; BA_DEF_DEF_ 自定义属性的初始值;
+         * BA_ 自定义属性的具体值; VAL_ 值描述
+         *  */
+        Pattern startPattern = Pattern.compile("^(?<title>BU_:|BO_|SG_|BO_TX_BU_|CM_|BA_DEF_|BA_DEF_DEF_|BA_|VAL_)\\s+"); // 匹配开头的正则表达式
+        while ((line = buffer.readLine()) != null) {
+            line = line.trim(); // 去除前后空格
+            //System.out.println("line :   "+line);
+            Matcher startMatch = startPattern.matcher(line); // 匹配一行的开头
+            if (! startMatch.find()){ //没有找到则退出，执行下一次循环
+                continue;
+            }
+            String lineStart = startMatch.group("title");
+            switch (lineStart){
+                case "BU_:":
+                    dbc.addCanNodeSet(parseBU(line)); // 解析节点
+                    break;
+                case "BO_":
+                    CanMessage msg = parseBO(line); // 解析消息
+                    //如果现有的集合中找不到相应id的报文，则添加新报文,就是说不存在重复的id。正确的做法是，如果重复了就弹出报错。疲倦了，不想再多写代码了，之前生成dbc的时候已经写过一次了。
+                    messagesMap.putIfAbsent(msg.getMsg_ID(), msg); //消息集合添加一条消息
+                    break;
+                case "SG_":
+                    CanSignal sig = parseSG(line); // 解析当前信号 .可能抛出异常
+                    CanMessage presentMsg = dbc.getMessageAtIndex(messagesMap.size()-1); // 获取前一个消息（已经添加到了map中）
+                    if (presentMsg != null) {
+                        //添加信号到对应的消息,添加信号前，需要校验是否重复。
+                        Map<String, CanSignal> signalMap = presentMsg.getSignalMap();
+                        String sigName = sig.getSignalName();
+                        signalMap.putIfAbsent(sigName, sig);
+                    } // sig != null
+                    break;
+                default:
+                    break;
+            } //switch (lineStart)
+            //testRegex1(line);
+        } // while 循环读取文件
+    } // parseBuffer
+
+
+    /**
+     * 检查文件路径是否是dbc
+     * @param filePath 文件路径
+     * @return 返回校验结果 ，或抛出异常
+     */
+    private static boolean isFileDbc(String filePath) {
         File file = new File(filePath);
         if(!file.exists()){ //如果文件不存在，退出
             //System.out.println("如果文件不存在，退出");
@@ -52,58 +151,8 @@ public class DbcParse {
             //System.out.println("不是DBC文件，退出");
             throw new RuntimeException("获取DBC文件发生错误，该文件不是DBC文件");
         }
-        CanDbc dbc = CanDbc.getEmptyDbc(dbcTag);
-        Map<Integer, CanMessage> messagesMap = dbc.getIntMsgMap();
-        try (
-                FileInputStream fis = new FileInputStream(filePath);
-                InputStreamReader isr = new InputStreamReader(fis,"GBK");  //fis,"GBK"  fis
-                BufferedReader br = new BufferedReader(isr)
-                ){
-            String line;
-            /* 依次得到每行内容 每行开头的内容分为以下9种： BU_: 节点 ; BO_  消息; SG_ 信号; BO_TX_BU_ 消息传输节点;
-             * CM_ 注释; BA_DEF_ 自定义属性的定义; BA_DEF_DEF_ 自定义属性的初始值;
-             * BA_ 自定义属性的具体值; VAL_ 值描述
-             *  */
-            Pattern startPattern = Pattern.compile("^(?<title>BU_:|BO_|SG_|BO_TX_BU_|CM_|BA_DEF_|BA_DEF_DEF_|BA_|VAL_)\\s+"); // 匹配开头的正则表达式
-            while ((line = br.readLine()) != null) {
-                line = line.trim(); // 去除前后空格
-                //System.out.println("line :   "+line);
-                Matcher startMatch = startPattern.matcher(line); // 匹配一行的开头
-                if (! startMatch.find()){ //没有找到则退出，执行下一次循环
-                    continue;
-                }
-                String lineStart = startMatch.group("title");
-                switch (lineStart){
-                    case "BU_:":
-                        dbc.addCanNodeSet(parseBU(line)); // 解析节点
-                        break;
-                    case "BO_":
-                        CanMessage msg = parseBO(line); // 解析消息
-                        //如果现有的集合中找不到相应id的报文，则添加新报文,就是说不存在重复的id。正确的做法是，如果重复了就弹出报错。疲倦了，不想再多写代码了，之前生成dbc的时候已经写过一次了。
-                        messagesMap.putIfAbsent(msg.getMsg_ID(), msg); //消息集合添加一条消息
-                        break;
-                    case "SG_":
-                        CanSignal sig = parseSG(line); // 解析当前信号 .可能抛出异常
-                        CanMessage presentMsg = dbc.getMessageAtIndex(messagesMap.size()-1); // 获取前一个消息（已经添加到了map中）
-                        if (presentMsg != null) {
-                            //添加信号到对应的消息,添加信号前，需要校验是否重复。
-                            Map<String, CanSignal> signalMap = presentMsg.getSignalMap();
-                            String sigName = sig.getSignalName();
-                            signalMap.putIfAbsent(sigName, sig);
-                        } // sig != null
-                        break;
-                    default:
-                        break;
-                } //switch (lineStart)
-                //testRegex1(line);
-            } // while 循环读取文件
-        } catch (IOException e) { // IO异常，获取CanMessage时，可能会发生 ExcelSheetException 异常
-            e.printStackTrace();
-            throw new RuntimeException("获取DBC文件发生错误，IO异常");
-        }
-        //System.out.println(" CAN通道信息打印 = \n"+dbc.getChannelInfo());
-        return dbc;
-    } //getDbcFromFile
+        return true;
+    }
 
     /**
      * 解析信号，暂不支持报文分组。

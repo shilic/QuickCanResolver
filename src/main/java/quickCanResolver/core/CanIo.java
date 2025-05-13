@@ -7,7 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 public class CanIo implements CanSendService {
     private static volatile CanIo canIo;
     /** CAN报文编解码器的管理器，报文的解码主要由管理器在实现。 */
-    public CanManagerService manager;
+    public final CanManagerService manager;
     /** MCU服务，使用依赖注入的方式使用底层服务，再由适配器在外部实现该服务。 */
     private McuService mcuService;
     /** 报文监听事件，使用依赖注入的方式实现。 */

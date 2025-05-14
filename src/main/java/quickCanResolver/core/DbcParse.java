@@ -43,7 +43,7 @@ public class DbcParse {
             // 解析一行数据
             parseBuffer(dbc,messagesMap,buffer);
         } catch (IOException e) { // IO异常，获取CanMessage时，可能会发生 ExcelSheetException 异常
-            throw new RuntimeException("获取DBC文件发生错误，IO异常");
+            throw new RuntimeException("DbcParse: 获取DBC文件发生错误，IO异常");
         }
         //System.out.println(" CAN通道信息打印 = \n"+dbc.getChannelInfo());
         return dbc;
@@ -56,7 +56,7 @@ public class DbcParse {
      */
     public static CanDbc getDbcFromFilePath(String dbcTag, String filePath) {
         if (! isFileDbc(filePath)) {
-            throw new RuntimeException("获取DBC文件发生错误，该文件不是DBC文件");
+            throw new RuntimeException("DbcParse：获取DBC文件发生错误，该文件不是DBC文件");
         }
         // 预加载空的数据
         CanDbc dbc = CanDbc.getEmptyDbc(dbcTag);
@@ -70,7 +70,7 @@ public class DbcParse {
             // 解析一行数据
             parseBuffer(dbc,messagesMap,buffer);
         } catch (IOException e) { // IO异常，获取CanMessage时，可能会发生 ExcelSheetException 异常
-            throw new RuntimeException("获取DBC文件发生错误，IO异常");
+            throw new RuntimeException("DbcParse：获取DBC文件发生错误，IO异常");
         }
         //System.out.println(" CAN通道信息打印 = \n"+dbc.getChannelInfo());
         return dbc;
@@ -89,7 +89,7 @@ public class DbcParse {
          * CM_ 注释; BA_DEF_ 自定义属性的定义; BA_DEF_DEF_ 自定义属性的初始值;
          * BA_ 自定义属性的具体值; VAL_ 值描述
          *  */
-        Pattern startPattern = Pattern.compile("^(?<title>BU_:|BO_|SG_|BO_TX_BU_|CM_|BA_DEF_|BA_DEF_DEF_|BA_|VAL_)\\s+"); // 匹配开头的正则表达式
+        Pattern startPattern = Pattern.compile("^(?<title>VERSION|BU_:|BO_|SG_|BO_TX_BU_|CM_|BA_DEF_|BA_DEF_DEF_|BA_|VAL_)\\s+"); // 匹配开头的正则表达式
         while ((line = buffer.readLine()) != null) {
             line = line.trim(); // 去除前后空格
             //System.out.println("line :   "+line);
@@ -99,6 +99,9 @@ public class DbcParse {
             }
             String lineStart = startMatch.group("title");
             switch (lineStart){
+                case "VERSION":
+                    System.out.println("DbcParse：DBC文件成功打开，版本信息为："+line);
+                    break;
                 case "BU_:":
                     dbc.addCanNodeSet(parseBU(line)); // 解析节点
                     break;
@@ -134,12 +137,12 @@ public class DbcParse {
         File file = new File(filePath);
         if(!file.exists()){ //如果文件不存在，退出
             //System.out.println("如果文件不存在，退出");
-            throw new RuntimeException("获取DBC文件发生错误，文件不存在");
+            throw new RuntimeException("DbcParse：获取DBC文件发生错误，文件不存在");
             // 由返回 null ，改为了抛出异常，可以更加明显的让外部使用者知道哪里发生了错误
         }
         if(file.isDirectory()){//如果是目录，则退出
             //System.out.println("如果是目录，则退出");
-            throw new RuntimeException("获取DBC文件发生错误，该文件是目录，而不是文件");
+            throw new RuntimeException("DbcParse：获取DBC文件发生错误，该文件是目录，而不是文件");
         }
         String fileName = file.getName();
         //获取文件完整名称,含后缀
@@ -149,7 +152,7 @@ public class DbcParse {
         //获取文件名 ， 不包含扩展名
         if (!fileExtension.equals(".dbc")) {
             //System.out.println("不是DBC文件，退出");
-            throw new RuntimeException("获取DBC文件发生错误，该文件不是DBC文件");
+            throw new RuntimeException("DbcParse：获取DBC文件发生错误，该文件不是DBC文件");
         }
         return true;
     }
@@ -163,12 +166,12 @@ public class DbcParse {
     public static CanSignal parseSG(String line) {
         line = line.trim();
         if ( ! line.startsWith("SG_")){
-            throw new RuntimeException("DBC文件识别异常,该行不是信号，原始数据line为:"+line);
+            throw new RuntimeException("DbcParse：DBC文件识别异常,该行不是信号，原始数据line为:"+line);
         }
 
         Matcher sigMatch =  Pattern.compile(regex).matcher(line);
         if(! sigMatch.find()){
-            throw new RuntimeException("DBC文件识别异常,原始数据line为:"+line);
+            throw new RuntimeException("DbcParse：DBC文件识别异常,原始数据line为:"+line);
         }
         /* 原始数据（待解析） */
         String sigNameStr = sigMatch.group("sigName");
@@ -195,7 +198,7 @@ public class DbcParse {
                 if (groupM != null){
                     // groupType = GroupType.Group_Flag;
                     // TODO 这里可能抛出异常，等后期再添加对报文分组类型的识别
-                    throw new RuntimeException("DBC文件识别异常，暂不支持对CAN报文进行分组");
+                    throw new RuntimeException("DbcParse：DBC文件识别异常，暂不支持对CAN报文进行分组");
                 }
                 if (numStr != null){
                     groupType = GroupType.Group_Number;
@@ -244,12 +247,12 @@ public class DbcParse {
     public static CanMessage parseBO(String line) {
         line = line.trim();
         if ( ! line.startsWith("BO_")){
-            throw new RuntimeException("DBC文件识别异常，该行不是CAN消息，原始line="+line);
+            throw new RuntimeException("DbcParse：DBC文件识别异常，该行不是CAN消息，原始line="+line);
         }
         Pattern msgPattern = Pattern.compile("BO_\\s*(?<longIdCode>\\d+)\\s*(?<msgName>\\b[a-zA-Z_]\\w*)\\s*:\\s*(?<length>\\d)\\s*(?<node>\\b[a-zA-Z_]\\w*)");
         Matcher msgMatch = msgPattern.matcher(line);
         if (! msgMatch.find()) {
-            throw new RuntimeException("DBC文件识别异常，原始line="+line);
+            throw new RuntimeException("DbcParse：DBC文件识别异常，原始line="+line);
         }
         String strIdCode = msgMatch.group("longIdCode");// 需要转换格式
         String msgName = msgMatch.group("msgName");
@@ -297,7 +300,7 @@ public class DbcParse {
         Set<String> nodeSet = new HashSet<>();
         line = line.trim();
         if ( ! line.startsWith("BU_:")){// 识别节点信息
-            throw new RuntimeException("DBC文件识别异常，该行不是节点信息，原始line="+line);
+            throw new RuntimeException("DbcParse：DBC文件识别异常，该行不是节点信息，原始line="+line);
         }
         /* 正则表达式，用于解析文件 */
         Pattern nodePattern = Pattern.compile("(\\s+(?<node>[a-zA-Z_]*))");

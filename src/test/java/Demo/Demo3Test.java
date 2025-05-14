@@ -45,6 +45,10 @@ public class Demo3Test extends MyActivityTest {
         System.out.println("oldModel  = " + oldModel + "\n");
 
     }
+
+    /**
+     * 测试程序的主要入口点
+     */
     @Test
     @Override
     public void onCreate() {

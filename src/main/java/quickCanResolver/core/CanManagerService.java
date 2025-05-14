@@ -38,6 +38,13 @@ public interface CanManagerService {
     byte[] enCode_B(int canId);
 
     /**
+     * 使用一个新的对象，编码数据，发送报文。
+     * @param canId canId
+     * @param model 使用一个数据模型用来生成报文，而不是之前的模型
+     * @return 返回解码后的报文
+     */
+    byte[] enCode_B(int canId,Object model);
+    /**
      * 添加一个 DBC输入接口
      * @param dbcInputInterface DBC输入接口
      * @return 返回自身，便于链式调用

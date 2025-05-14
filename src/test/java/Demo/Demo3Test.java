@@ -121,9 +121,11 @@ public class Demo3Test extends MyActivityTest {
         public void handleMessage() {
             Demo3Test activity = ref.get();
             // 在这里接收 子线程 发来的事件请求，并处理，例如更新界面，发送报文等操作。
-            activity.event();
-            CanIo canIo = CanIo.getInstance();
-            CarDataModelTest newModel = canIo.manager.createNewModel(CarDataModelTest.class);
+            if (activity != null) {
+                activity.event();
+            }
+            //CanIo canIo = CanIo.getInstance();
+            CarDataModelTest newModel = CanIo.Manager().createNewModel(CarDataModelTest.class);
         }
     }
 }

@@ -13,6 +13,14 @@ public class CanIo implements CanSendService {
     /** 报文监听事件，使用依赖注入的方式实现。 */
     private CanListenService listenService;
 
+    /**
+     * 直接获取Manager
+     * @return 返回一个 CAN报文编解码器的管理器
+     */
+    public static CanManagerService Manager() {
+        return getInstance().manager;
+    }
+
     /** 注册底层的MCU，以及报文监听函数。
      * @param clazz 传入MCU适配器，类型：McuService，需要在适配器中完成底层MCU和上层接口的对接。
      * @param listenService 监听事件

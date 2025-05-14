@@ -78,7 +78,7 @@ public class CanCoder {
         return SLCTool.from64bitsTo8BytesI(data64, SLCTool.DataType.Intel); // 64 --> 8
     }
     /**
-     * 编码数据，发送报文。
+     * 使用原有对象，编码数据，发送报文。
      * <br>将数据模型的字段，解析后得到一个CAN报文数组。<br>
      * @param canId 报文id
      * @return 8位数组的CAN报文。
@@ -91,9 +91,31 @@ public class CanCoder {
         byte[] data64 = new byte[64];
         // field --> 64 ; 循环，逐个将信号的值解析出来，并加载到数组对应的位中。
         for (CanSignal signal : sendMsg.getSignalMap().values()) {
-            sigToBits64(data64,signal.readValue() , signal.getStartBit(), signal.getBitLength(), signal.getFactor() , signal.getOffset() ,signal.getByteOrder());
+            sigToBits64(data64,signal.readValue() , signal.getStartBit(), signal.getBitLength(),
+                    signal.getFactor() , signal.getOffset() ,signal.getByteOrder());
         }
         return SLCTool.from64bitsTo8Bytes(data64, SLCTool.DataType.Intel); // 64 --> 8
+    }
+    /**
+     * 使用新的对象，编码数据，发送报文。
+     * <br>将数据模型的字段，解析后得到一个CAN报文数组。<br>
+     * @param canId 报文id
+     * @param newObject 新的数据对象
+     * @return 8位数组的CAN报文。
+     */
+    public byte[] enCode_B(int canId, Object newObject) {
+        CanMessage sendMsg = msgMap.get(canId);
+        if (sendMsg == null){
+            return new byte[8]; // 传一个全是0的回去
+        }
+        byte[] data64 = new byte[64];
+        // field --> 64 ; 循环，逐个将信号的值解析出来，并加载到数组对应的位中。
+        for (CanSignal signal : sendMsg.getSignalMap().values()) {
+            // 从新对象中读取值，并生成报文。
+            sigToBits64(data64,signal.readValue(newObject) , signal.getStartBit(), signal.getBitLength(),
+                    signal.getFactor() , signal.getOffset() ,signal.getByteOrder());
+        }
+        return SLCTool.from64bitsTo8Bytes(data64, SLCTool.DataType.Intel);
     }
 
     /**

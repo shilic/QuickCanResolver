@@ -83,9 +83,10 @@ public class CanIo implements CanSendService {
 
     /**
      * 使用一个数据对象来发送报文。
-     * @param canId
-     * @param model
+     * @param canId canId
+     * @param model 数据对象
      */
+    @Override
     public void send(int canId, Object model) {
         if(mcuService == null) {
             throw new IllegalStateException("没有注册CAN服务的情况下，没有办法发送报文");

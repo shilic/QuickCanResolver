@@ -11,4 +11,5 @@ public interface CanSendService {
      * @param canId canId
      * */
     void send(int canId);
+    void send(int canId, Object model);
 }

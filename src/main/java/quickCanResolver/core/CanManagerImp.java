@@ -313,7 +313,7 @@ public class CanManagerImp implements CanManagerService {
         }
         // 查找到 被 CanBinding 注解的字段
         CanBinding canBinding = field.getAnnotation(CanBinding.class);
-        String signalTag = canBinding.signalTag();
+        String signalTag = canBinding.signalTag().trim();
         int msgTag = canBinding.messageId();
         // 需要查找DBC中是否含有对应信号，有才加入 map 中。
         if (msgTag == CanBinding.Default){

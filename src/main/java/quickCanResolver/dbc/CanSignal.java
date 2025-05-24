@@ -120,7 +120,7 @@ public class CanSignal {
         if(dataModelClass != reClass){
             throw new RuntimeException("传入的类型和绑定的初始类型有误，无法正确识别数据，请确保类型正确");
         }
-        return FieldChanger.getFieldValue(field, newDataModel); // 获取绑定的字段中当前的旧值
+        return FieldChanger.getFieldValue(field, newDataModel); // 获取绑定的字段中当前的值
     }
     public boolean checkModelType(Object newObj) {
         Class<?> currentClazz = dataModel.getClass();

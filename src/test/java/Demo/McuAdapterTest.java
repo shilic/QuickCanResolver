@@ -20,20 +20,21 @@ public class McuAdapterTest implements McuService {
 
     @Override
     public void nativeRegister(CanListenService canListener) {
-        listenerEvent = new McuCanListenerEvent(canListener);
+        listenerEvent = McuCanListenerEvent.getInstance().addListenerEvent(canListener);
         // 这里会首先回调本地的方法调用。先调用第三方组件的方法。最后调用自己的方法
         mcuCan.nativeRegisterCanListener(listenerEvent);
     }
 
     @Override
     public void nativeUnRegister(CanListenService canListener) {
-        mcuCan.unregisterCan(listenerEvent);
+        if (listenerEvent != null && canListener != null) {
+            mcuCan.unregisterCan(listenerEvent);
+        }
     }
     public static class McuCanListenerEvent implements McuCanTest.McuCanListener {
+        private static volatile McuCanListenerEvent event;
         CanListenService canListener;
-        public McuCanListenerEvent(CanListenService canListener){
-            this.canListener = canListener;
-        }
+
         @Override
         public void onStatus(int canId, byte[] data8) {
             // 拿到第三方的数据后， 最终回调了我自己写的监听函数。
@@ -41,6 +42,24 @@ public class McuAdapterTest implements McuService {
             CanIo.getInstance().manager.deCode_B(canId, data8);
             // 再回调从 Activity 传入的回调函数
             canListener.listened(canId, data8);
+        }
+
+        public static McuCanListenerEvent getInstance() {
+            if (event == null){
+                synchronized (McuCanListenerEvent.class){
+                    if (event == null){
+                        return event = new McuCanListenerEvent();
+                    }
+                }
+            }
+            return event;
+        }
+        private McuCanListenerEvent(){
+
+        }
+        public McuCanListenerEvent addListenerEvent(CanListenService canListener){
+            this.canListener = canListener;
+            return this;
         }
     }
 }

@@ -720,7 +720,7 @@ public class SLCTool {
         StringBuilder hexString = new StringBuilder();
         hexString.append("{");
         for (byte datum : data) {
-            hexString.append(String.format("%02X", datum)).append(", "); // 将byte转换为长度为2的16进制字符串
+            hexString.append("0x").append(String.format("%02X", datum)).append(", "); // 将byte转换为长度为2的16进制字符串
         }
         hexString.append("}");
         return hexString.toString();
@@ -735,7 +735,7 @@ public class SLCTool {
         StringBuilder hexString = new StringBuilder();
         hexString.append("{");
         for (short datum : data) {
-            hexString.append(String.format("%04X", datum)).append(", "); // 将byte转换为长度为2的16进制字符串
+            hexString.append("0x").append(String.format("%04X", datum)).append(", "); // 将byte转换为长度为2的16进制字符串
         }
         hexString.append("}");
         return hexString.toString();
@@ -750,7 +750,7 @@ public class SLCTool {
         StringBuilder hexString = new StringBuilder();
         hexString.append("{");
         for (long datum : data) {
-            hexString.append(String.format("%16X", datum)).append(", "); // 将byte转换为长度为2的16进制字符串
+            hexString.append("0x").append(String.format("%16X", datum)).append(", "); // 将byte转换为长度为2的16进制字符串
         }
         hexString.append("}");
         return hexString.toString();
@@ -765,7 +765,7 @@ public class SLCTool {
         StringBuilder hexString = new StringBuilder();
         hexString.append("{");
         for (int datum : data) {
-            hexString.append(String.format("%08X", datum)).append(", "); // 将byte转换为长度为2的16进制字符串
+            hexString.append("0x").append(String.format("%08X", datum)).append(", "); // 将byte转换为长度为2的16进制字符串
         }
         hexString.append("}");
         return hexString.toString();

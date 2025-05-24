@@ -50,7 +50,7 @@ public final class McuCanTest {
     /** 模拟了一个数据发送方法，具体实现由车机大屏的MCU实现。最终交给应用层使用。 */
     public void nativeSendCanData( int canId, byte[] data8 ) {
         System.out.println("McuCan：成功在本地发送报文" );
-        System.out.println("id = "+ SLCTool.toHexString(canId) +", 发送的报文为 "+ Arrays.toString(data8) );
+        System.out.println("id = "+ SLCTool.toHexString(canId) +", 发送的报文为 "+ SLCTool.toHexString(data8) );
     }
     /** 模拟了一个数据监听方法的注册，将数据监听接口传给本地方法后，由本地方法回调你写的函数 */
     public void nativeRegisterCanListener(McuCanListener mcuCanListener) {

@@ -21,14 +21,20 @@ public class CanIo implements CanSendService {
         return getInstance().manager;
     }
 
-    /** 注册底层的MCU，以及报文监听函数。
-     * @param clazz 传入MCU适配器，类型：McuService，需要在适配器中完成底层MCU和上层接口的对接。
+    /** 以及报文监听函数。
      * @param listenService 监听事件
      * */
-    public void register(Class<? extends McuService> clazz, CanListenService listenService) {
+    public void register(CanListenService listenService) {
+        this.listenService = listenService ;
+        mcuService.nativeRegister(listenService);
+    }
+    /** 注册底层的MCU的适配器。
+     * @param adapterClazz 传入MCU适配器，类型：McuService，需要在适配器中完成底层MCU和上层接口的对接。
+     * */
+    public CanIo addAdapter(Class<? extends McuService> adapterClazz){
         try {
             // 获取无参构造函数
-            Constructor<? extends McuService> constructor = clazz.getDeclaredConstructor();
+            Constructor<? extends McuService> constructor = adapterClazz.getDeclaredConstructor();
             // 允许访问私有构造函数
             constructor.setAccessible(true);
             // 创建实例
@@ -36,12 +42,11 @@ public class CanIo implements CanSendService {
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
-        this.listenService = listenService ;
-        mcuService.nativeRegister(listenService);
+        return this;
     }
     /** 取消注册所有内容，包括监听事件和绑定对象 */
     public void unRegisterAll() {
-        mcuService.nativeUnRegister(listenService);
+        unRegisterCanListener();
         manager.clear();
     }
 
@@ -49,7 +54,9 @@ public class CanIo implements CanSendService {
      * 取消注册监听事件
      */
     public void unRegisterCanListener() {
-        mcuService.nativeUnRegister(listenService);
+        if(mcuService != null && listenService != null) {
+            mcuService.nativeUnRegister(listenService);
+        }
     }
     /** 手动发送一组报文
      * @param canId canId
@@ -57,6 +64,9 @@ public class CanIo implements CanSendService {
      * */
     @Override
     public void send(int canId, byte[] data8) {
+        if(mcuService == null) {
+            throw new IllegalStateException("没有注册CAN服务的情况下，没有办法发送报文");
+        }
         mcuService.nativeSend(canId,data8);
     }
     /** 根据id发送报文
@@ -64,8 +74,24 @@ public class CanIo implements CanSendService {
      * */
     @Override
     public void send(int canId) {
+        if(mcuService == null) {
+            throw new IllegalStateException("没有注册CAN服务的情况下，没有办法发送报文");
+        }
         // 调用manager得到一组编码后的数据，再调用底层接口发送
         mcuService.nativeSend(canId, manager.enCode_B(canId));
+    }
+
+    /**
+     * 使用一个数据对象来发送报文。
+     * @param canId
+     * @param model
+     */
+    public void send(int canId, Object model) {
+        if(mcuService == null) {
+            throw new IllegalStateException("没有注册CAN服务的情况下，没有办法发送报文");
+        }
+        // 调用manager得到一组编码后的数据，再调用底层接口发送
+        mcuService.nativeSend(canId, manager.enCode_B(canId, model));
     }
 
     /**

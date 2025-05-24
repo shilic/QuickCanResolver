@@ -207,7 +207,7 @@ public class CanManagerImp implements CanManagerService {
      * @return 返回解码后的报文
      */
     @Override
-    public  byte[] enCode_B(int canId,Object model) {
+    public  byte[] enCode_B(int canId, Object model) {
         // 根据 canId 确定要写入哪一个 DBC
         String dbcTag = findDbcTagByCanId(canId);
         // 根据 DbcTag 获取处理者

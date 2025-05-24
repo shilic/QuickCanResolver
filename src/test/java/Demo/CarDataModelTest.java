@@ -135,8 +135,8 @@ public class CarDataModelTest implements CanCopyable<CarDataModelTest> , Cloneab
         msg1Sig2 = 12;
         msg1Sig3 = 13;
         msg1Sig4 = 14 ;
-        msg1Sig5 = 23.45;
-        msg1Sig6 = 10.7;
+        msg1Sig5 = 23.4;
+        msg1Sig6 = 10.5;
         msg1Sig7 = -81.1;
         msg1Sig8 = 111.0;
     }

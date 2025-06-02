@@ -20,7 +20,8 @@ public class CarDataModelTest implements CanCopyable<CarDataModelTest> , Cloneab
     // 属性的名称可以不和dbc中的信号名称一致，名称定义取决于你。但，注解中标注的信号名称需要和DBC文件中定义的一致。
     /** 空调温度 */
     @CanBinding(signalTag = "CabinToCCS1_CabinTemp")
-    int airTemperature;
+    //int airTemperature;
+    Integer airTemperature = null;
     /** 空调制冷级别 */
     @CanBinding(signalTag = "CabinToCCS1_ColdGearSts")
     int coldGear;
@@ -41,7 +42,8 @@ public class CarDataModelTest implements CanCopyable<CarDataModelTest> , Cloneab
     int rollingCounter;
 
     @CanBinding(signalTag = "msg1_sig1")
-    int msg1Sig1;
+    //int msg1Sig1;
+    Integer msg1Sig1 = null;
     @CanBinding(signalTag = "msg1_sig2")
     int msg1Sig2;
     @CanBinding(signalTag = "msg1_sig3")

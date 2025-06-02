@@ -3,7 +3,7 @@ package quickCanResolver.dbc;
 import java.lang.reflect.Field;
 
 public class FieldChanger {
-    private static final String ERR_INFO = "注解的字段类型出错，数据类型必须是 int,byte,short,float,double 中的一个";
+    private static final String ERR_INFO = "注解的字段类型出错，数据类型必须是 int,byte,short,float,double 以及他们的包装类型 中的一个";
     /**
      * 通过反射的方式，将字段值写入到传入的模型中。
      * @param field 字段
@@ -15,29 +15,24 @@ public class FieldChanger {
             return;
         }
         Class<?> fieldType = field.getType();
+        // 使用Integer.TYPE出现兼容性问题， Integer.TYPE实则为 int，无法识别包装类型 Integer, 故改为下边方式
         try {
-            if (fieldType.equals(Integer.TYPE)){
-                field.setInt(obj, (int) sigValue);
+            if (fieldType == int.class || fieldType == Integer.class) {
+                field.set(obj, (int) sigValue); // 自动处理装箱/拆箱
+            } else if (fieldType == double.class || fieldType == Double.class) {
+                field.set(obj, sigValue); // 自动处理装箱/拆箱
+            } else if (fieldType == byte.class || fieldType == Byte.class) {
+                field.set(obj, (byte) sigValue);
+            } else if (fieldType == short.class || fieldType == Short.class) {
+                field.set(obj, (short) sigValue);
+            } else if (fieldType == float.class || fieldType == Float.class) {
+                field.set(obj, (float) sigValue);
+            } else {
+                throw new RuntimeException(ERR_INFO + "，不支持的类型：" + fieldType.getName());
             }
-            else if (fieldType.equals(Double.TYPE)){
-                field.setDouble(obj,sigValue);
-            }
-            else if (fieldType.equals(Byte.TYPE)){
-                field.setByte(obj, (byte) sigValue);
-            }
-            else if (fieldType.equals(Short.TYPE)){
-                field.setShort(obj, (short) sigValue);
-            }
-            else if (fieldType.equals(Float.TYPE)){
-                field.setFloat(obj, (float) sigValue);
-            }
-            else {
-                throw new RuntimeException(ERR_INFO);
-            }
-        } catch (IllegalAccessException e){
-            throw new RuntimeException(ERR_INFO);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(ERR_INFO + "，访问失败：" + fieldType.getName(), e);
         }
-
     }
 
     /**
